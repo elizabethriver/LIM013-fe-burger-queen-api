@@ -1,4 +1,5 @@
 const bcrypt = require('bcrypt');
+const mysqlConnection = require('../db');
 
 const {
   requireAuth,

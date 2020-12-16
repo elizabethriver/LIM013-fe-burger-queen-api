@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const mysqlConnection = require('../db');
 
 module.exports = (secret) => (req, resp, next) => {
   const { authorization } = req.headers;
@@ -17,22 +18,40 @@ module.exports = (secret) => (req, resp, next) => {
     if (err) {
       return next(403);
     }
+    console.log(decodedToken);
+    const sql = `SELECT * FROM users WHERE email = "${decodedToken.result[0].email}" `;
+    mysqlConnection.query(sql, (error, result) => {
+      if (error) throw error;
+      if (result) {
+        req.user = result[0];
+        next();
+      } else {
+        next(404);
+      }
+    });
 
     // TODO: Verificar identidad del usuario usando `decodeToken.uid`
   });
 };
 
 
-module.exports.isAuthenticated = (req) => (
-  // TODO: decidir por la informacion del request si la usuaria esta autenticada
-  false
-);
+module.exports.isAuthenticated = (req) => {
+  if (req.user) {
+  return true;
+}
+return false;
+};
 
 
-module.exports.isAdmin = (req) => (
-  // TODO: decidir por la informacion del request si la usuaria es admin
-  false
-);
+
+module.exports.isAdmin = (req) => {
+if (req.user) {
+  return true;
+}
+return false;
+};
+
+
 
 
 module.exports.requireAuth = (req, resp, next) => (
