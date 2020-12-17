@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const config = require('../config');
 
+
 const { secret } = config;
 
 /** @module auth */
@@ -25,6 +26,7 @@ module.exports = (app, nextMain) => {
     }
 
     // TODO: autenticar a la usuarix
+    
     next();
   });
 
