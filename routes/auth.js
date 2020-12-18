@@ -1,7 +1,6 @@
 const jwt = require('jsonwebtoken');
 const config = require('../config');
 
-
 const { secret } = config;
 
 /** @module auth */
@@ -10,7 +9,7 @@ module.exports = (app, nextMain) => {
    * @name /auth
    * @description Crea token de autenticación.
    * @path {POST} /auth
-   * @body {String} email Correo
+   * @body {String} email Correo3
    * @body {String} password Contraseña
    * @response {Object} resp
    * @response {String} resp.token Token a usar para los requests sucesivos
@@ -26,7 +25,8 @@ module.exports = (app, nextMain) => {
     }
 
     // TODO: autenticar a la usuarix
-    
+    const token = generateAccessToken({ username: req.body.username });
+    resp.json(token);
     next();
   });
 

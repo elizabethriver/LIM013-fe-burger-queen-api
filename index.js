@@ -7,14 +7,21 @@ const errorHandler = require('./middleware/error');
 const routes = require('./routes');
 const pkg = require('./package.json');
 
-
 const { port, dbUrl, secret } = config;
 const app = express();
 
 // TODO: Conexión a la Base de Datos (MongoDB o MySQL)
+dbUrl.connect((error) => {
+  if (error) {
+    throw error;
+  } else {
+    console.log('CONEXION EXITOSA');
+  }
+});
 app.use(cors());
 app.set('config', config);
 app.set('pkg', pkg);
+
 
 // parse application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: false }));

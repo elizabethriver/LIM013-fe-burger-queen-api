@@ -1,32 +1,28 @@
+require('dotenv').config({ path: 'secrets.env' });
+
 const mysql = require('mysql');
 
-const conexion = mysql.createConnection({
-  host: 'localhost',
-  datebase: 'burguerqueen',
-  user: 'root',
-  password: 'Eruliz1987.',
-});
+const db = {
+  host: process.env.DB_HOST,
+  datebase: process.env.DB_HOST,
+  user: process.env.DB_USER_DB,
+  password: process.env.DB_PASS,
+};
 
-conexion.connect((error) => {
-  if (error) {
-    throw error;
-  } else {
-    console.log('CONEXION EXITOSA');
-  }
-});
+const dbUrl = mysql.createConnection(db);
 
-conexion.query('SELECT * from burguerqueen.users', (err, results, fields) => {
-  if (err) {
-    throw err;
-  }
-  results.forEach((result) => {
-    console.log(result);
-  });
-});
-conexion.end();
+// dbUrl.query('SELECT * from burguerqueen.users', (err, results, fields) => {
+//   if (err) {
+//     throw err;
+//   }
+//   results.forEach((result) => {
+//     console.log(result);
+//   });
+// });
+// dbUrl.end();
 
 exports.port = process.argv[2] || process.env.PORT || 8080;
-exports.dbUrl = process.env.DB_URL || 'mongodb://localhost:27017/test';
-exports.secret = process.env.JWT_SECRET || 'esta-es-la-api-burger-queen';
-exports.adminEmail = process.env.ADMIN_EMAIL || 'admin@localhost';
-exports.adminPassword = process.env.ADMIN_PASSWORD || 'changeme';
+exports.dbUrl = dbUrl;
+exports.secret = process.env.JWT_SECRET;
+exports.adminEmail = process.env.ADMIN_EMAIL;
+exports.adminPassword = process.env.ADMIN_PASSWORD;
