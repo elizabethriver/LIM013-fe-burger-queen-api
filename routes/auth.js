@@ -23,40 +23,41 @@ module.exports = (app, nextMain) => {
    */
   app.post('/auth', (req, resp, next) => {
     const { email, password } = req.body;
+    console.log('Aqui');
     console.log(email, password);
     if (!email || !password) {
       return next(400);
     }
 
     // TODO: autenticar a la usuarix
-    const values = 'SELECT * FROM users';
-    pool.query(values, (err, result) => {
-      if (err) throw err;
-      console.log(result);
-      // eslint-disable-next-line max-len
-      if (!(email === result.email && password === result.password && secret)) {
-        resp.status(401).send({
-          error: 'usuario o contraseña inválidos',
+    const values = `SELECT * FROM users WHERE email = "${email}" `;
+    pool.query(values, (error, result) => {
+      if (error) throw error;
+      if (!result) {
+        return resp.status(400).json({
+          success: 0,
+          data: 'Invalid email',
         });
-        return;
       }
-
-      const tokenData = {
-        email,
-        password,
-        // ANY DATA
-      };
-
-      const token = jwt.sign(tokenData, 'Secret Password', {
-        expiresIn: 60 * 60 * 24, // expires in 24 hours
-      });
-
-      resp.send({
-        token,
-      });
+      const pass = password === bcrypt.compareSync(password, result.password);
+      console.log(pass);
+      if (pass) {
+        const jsontoken = jwt.sign({ result }, secret, {
+          expiresIn: '1h',
+        });
+        resp.header('authorization', jsontoken);
+        resp.status(200).json({
+          success: 1,
+          message: 'login successfully',
+          token: jsontoken,
+        });
+      } else {
+        resp.status(400).json({
+          success: 0,
+          data: 'Invalid password',
+        });
+      }
     });
-
-    // next();
   });
   return nextMain();
 };
