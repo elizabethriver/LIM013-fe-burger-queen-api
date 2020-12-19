@@ -2,18 +2,21 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const config = require('../config');
 const pool = require('../db-data/modelo');
+// const users = require('../controller/users');
 
 const { secret } = config;
 // console.log( { secret } );
 // console.log(secret);
 // console.log(adminEmail);
 /** @module auth */
+/** @module auth */
+/** @module auth */
 module.exports = (app, nextMain) => {
   /**
    * @name /auth
    * @description Crea token de autenticación.
    * @path {POST} /auth
-   * @body {String} email Correo3
+   * @body {String} email Correo
    * @body {String} password Contraseña
    * @response {Object} resp
    * @response {String} resp.token Token a usar para los requests sucesivos
@@ -22,42 +25,40 @@ module.exports = (app, nextMain) => {
    * @auth No requiere autenticación
    */
   app.post('/auth', (req, resp, next) => {
+    // resp.json({
+    //   email: 'elo',
+    // });
     const { email, password } = req.body;
-    console.log('Aqui');
-    console.log(email, password);
+    console.log({ email, password });
     if (!email || !password) {
       return next(400);
     }
 
     // TODO: autenticar a la usuarix
-    const values = `SELECT * FROM users WHERE email = "${email}" `;
-    pool.query(values, (error, result) => {
+    pool.query(`SELECT * FROM burguerqueen.users WHERE email = '${email}'`, (error, result) => {
       if (error) throw error;
-      if (!result) {
-        return resp.status(400).json({
-          success: 0,
-          data: 'Invalid email',
-        });
-      }
-      const pass = password === bcrypt.compareSync(password, result.password);
-      console.log(pass);
-      if (pass) {
-        const jsontoken = jwt.sign({ result }, secret, {
-          expiresIn: '1h',
-        });
-        resp.header('authorization', jsontoken);
-        resp.status(200).json({
-          success: 1,
-          message: 'login successfully',
-          token: jsontoken,
-        });
+      // // Generate Salt
+      // const salt = bcrypt.genSaltSync(10);
+
+      // // Hash Password
+      // const hash = bcrypt.hashSync('1234', salt);
+
+      // console.log(hash);
+
+      // eslint-disable-next-line max-len
+      const payload = result.find((user) => user.email === email && bcrypt.compareSync(password, user.password));
+      // console.log(payload);
+
+      if (payload) {
+        const token = jwt.sign({ email: payload.email, password: payload.password }, secret);
+        resp.header('authorization', token);
+        resp.status(200).send({ message: 'succesful', token });
       } else {
-        resp.status(400).json({
-          success: 0,
-          data: 'Invalid password',
-        });
+        next(404);
       }
     });
+    // next();
   });
   return nextMain();
 };
+console.log('Aqui finaliza');
