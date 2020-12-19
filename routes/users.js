@@ -9,7 +9,6 @@ const {
   getUsers,
 } = require('../controller/users');
 
-
 const initAdminUser = (app, next) => {
   const { adminEmail, adminPassword } = app.get('config');
   if (!adminEmail || !adminPassword) {
@@ -21,8 +20,10 @@ const initAdminUser = (app, next) => {
     password: bcrypt.hashSync(adminPassword, 10),
     roles: { admin: true },
   };
-
+console.log(adminUser);
   // TODO: crear usuaria admin
+  
+
   next();
 };
 

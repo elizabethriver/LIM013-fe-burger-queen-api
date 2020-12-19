@@ -1,8 +1,12 @@
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 const config = require('../config');
+const pool = require('../db-data/modelo');
 
 const { secret } = config;
-
+// console.log( { secret } );
+// console.log(secret);
+// console.log(adminEmail);
 /** @module auth */
 module.exports = (app, nextMain) => {
   /**
@@ -19,16 +23,40 @@ module.exports = (app, nextMain) => {
    */
   app.post('/auth', (req, resp, next) => {
     const { email, password } = req.body;
-
+    console.log(email, password);
     if (!email || !password) {
       return next(400);
     }
 
     // TODO: autenticar a la usuarix
-    const token = generateAccessToken({ username: req.body.username });
-    resp.json(token);
-    next();
-  });
+    const values = 'SELECT * FROM users';
+    pool.query(values, (err, result) => {
+      if (err) throw err;
+      console.log(result);
+      // eslint-disable-next-line max-len
+      if (!(email === result.email && password === result.password && secret)) {
+        resp.status(401).send({
+          error: 'usuario o contraseña inválidos',
+        });
+        return;
+      }
 
+      const tokenData = {
+        email,
+        password,
+        // ANY DATA
+      };
+
+      const token = jwt.sign(tokenData, 'Secret Password', {
+        expiresIn: 60 * 60 * 24, // expires in 24 hours
+      });
+
+      resp.send({
+        token,
+      });
+    });
+
+    // next();
+  });
   return nextMain();
 };
