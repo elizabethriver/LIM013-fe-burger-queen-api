@@ -15,7 +15,7 @@
     "lint": "eslint .",
     "docs:generate": "jsdoc -c jsdoc.conf --readme README-docs.md",
     "docs:deploy": "rm -rf docs && npm run docs:generate && gh-pages -d docs",
-    "dev": "nodemon src/index.js"
+    "dev": "nodemon index.js"
   },
   "dependencies": {
     "bcrypt": "^5.0.0",

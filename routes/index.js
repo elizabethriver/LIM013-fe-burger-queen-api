@@ -5,6 +5,7 @@ const users = require('./users');
 
 const root = (app, next) => {
   const pkg = app.get('pkg');
+  // console.log(pkg);
   app.get('/', (req, res) => res.json({ name: pkg.name, version: pkg.version }));
   app.all('*', (req, resp, nextAll) => nextAll(404));
   return next();

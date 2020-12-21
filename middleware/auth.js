@@ -3,7 +3,7 @@ const pool = require('../db-data/modelo');
 
 module.exports = (secret) => (req, resp, next) => {
   const { authorization } = req.headers;
-
+console.log({ authorization });
   if (!authorization) {
     return next();
   }
@@ -21,7 +21,7 @@ module.exports = (secret) => (req, resp, next) => {
 
     // TODO: Verificar identidad del usuario usando `decodeToken.uid`
     try {
-      pool.query('SELECT * FROM users', (error, result) => {
+      pool.query('SELECT * FROM burguerqueen.users', (error, result) => {
         if (error) { throw error; }
         // console.log(decodedToken);
         const userVerified = result.find((user) => user.email === decodedToken.email);
@@ -37,7 +37,8 @@ module.exports = (secret) => (req, resp, next) => {
 };
 
 module.exports.isAuthenticated = (req) => {
-  if (req.user) {
+  // console.log(req);
+  if (req.body) {
     return true;
   }
   return false;
@@ -46,7 +47,7 @@ module.exports.isAuthenticated = (req) => {
 
 module.exports.isAdmin = (req) => {
   // TODO: decidir por la informacion del request si la usuaria es admin
-  if (req.user.rolesAdmin) {
+  if (req.body) {
     return true;
   }
   return false;
@@ -60,9 +61,12 @@ module.exports.requireAuth = (req, resp, next) => (
 
 module.exports.requireAdmin = (req, resp, next) => (
   // eslint-disable-next-line no-nested-ternary
+
+  // eslint-disable-next-line no-nested-ternary
   (!module.exports.isAuthenticated(req))
     ? next(401)
     : (!module.exports.isAdmin(req))
       ? next(403)
       : next()
+
 );

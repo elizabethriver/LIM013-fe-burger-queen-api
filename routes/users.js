@@ -4,13 +4,17 @@ const {
   requireAuth,
   requireAdmin,
 } = require('../middleware/auth');
+const pool = require('../db-data/modelo');
 
 const {
   getUsers,
 } = require('../controller/users');
 
+const { getAllData, postData } = require('../db-data/sql');
+
 const initAdminUser = (app, next) => {
   const { adminEmail, adminPassword } = app.get('config');
+  // console.log({ adminEmail, adminPassword });
   if (!adminEmail || !adminPassword) {
     return next();
   }
@@ -20,13 +24,22 @@ const initAdminUser = (app, next) => {
     password: bcrypt.hashSync(adminPassword, 10),
     roles: { admin: true },
   };
-console.log(adminUser);
+  // console.log(adminUser);
   // TODO: crear usuaria admin
-  
-
-  next();
+  try {
+    const sql = `INSERT INTO burguerqueen.users (email, password, admin) VALUES ('${adminUser.email}', '${adminUser.password}', ${adminUser.roles.admin})`;
+    pool.query(sql, (err, result) => {
+      // console.log(err);
+      if (err.code === 'ER_DUP_ENTRY') {
+        // console.log('Adminuser already exists');
+      } else {
+        throw err;
+      }
+    });
+  } finally {
+    next();
+  }
 };
-
 
 /*
  * Diagrama de flujo de una aplicación y petición en node - express :
@@ -96,6 +109,9 @@ module.exports = (app, next) => {
    * @code {404} si la usuaria solicitada no existe
    */
   app.get('/users/:uid', requireAuth, (req, resp) => {
+    resp.jon({
+      mensaje: 'Obtiene información de una usuaria',
+    });
   });
 
   /**
@@ -118,6 +134,37 @@ module.exports = (app, next) => {
    * @code {403} si ya existe usuaria con ese `email`
    */
   app.post('/users', requireAdmin, (req, resp, next) => {
+    if (!req.headers) {
+      return next(401);
+    }
+    const { email, password, roles } = req.body;
+
+    const user = {
+      email,
+      password: bcrypt.hashSync(password, 10),
+      admin: roles.admin,
+    };
+    if (!email || !password) {
+      return next(400);
+    }
+    // eslint-disable-next-line no-useless-catch
+    try {
+      const sql = `INSERT INTO burguerqueen.users (email, password, admin) VALUES ('${user.email}', '${user.password}', ${user.admin})`;
+      pool.query(sql, (err, result) => {
+        if (err) {
+          if (err.code === 'ER_DUP_ENTRY') {
+            console.log('User already exists');
+            return next(403);
+          }
+        }
+        else{
+          console.log('user registered');
+          return next(200);
+        }
+      });
+    } catch (err) {
+      throw err;
+    }
   });
 
   /**
@@ -143,6 +190,9 @@ module.exports = (app, next) => {
    * @code {404} si la usuaria solicitada no existe
    */
   app.put('/users/:uid', requireAuth, (req, resp, next) => {
+    resp.jon({
+      mensaje: 'eliminas una usuaria',
+    });
   });
 
   /**

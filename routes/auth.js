@@ -25,11 +25,8 @@ module.exports = (app, nextMain) => {
    * @auth No requiere autenticación
    */
   app.post('/auth', (req, resp, next) => {
-    // resp.json({
-    //   email: 'elo',
-    // });
     const { email, password } = req.body;
-    console.log({ email, password });
+    // console.log({ email, password });
     if (!email || !password) {
       return next(400);
     }
@@ -37,20 +34,13 @@ module.exports = (app, nextMain) => {
     // TODO: autenticar a la usuarix
     pool.query(`SELECT * FROM burguerqueen.users WHERE email = '${email}'`, (error, result) => {
       if (error) throw error;
-      // // Generate Salt
-      // const salt = bcrypt.genSaltSync(10);
-
-      // // Hash Password
-      // const hash = bcrypt.hashSync('1234', salt);
-
-      // console.log(hash);
-
       // eslint-disable-next-line max-len
       const payload = result.find((user) => user.email === email && bcrypt.compareSync(password, user.password));
       // console.log(payload);
 
       if (payload) {
-        const token = jwt.sign({ email: payload.email, password: payload.password }, secret);
+        // eslint-disable-next-line max-len
+        const token = jwt.sign({ email: payload.email, password: payload.password }, secret, { expiresIn: 60 * 60 });
         resp.header('authorization', token);
         resp.status(200).send({ message: 'succesful', token });
       } else {
@@ -61,4 +51,4 @@ module.exports = (app, nextMain) => {
   });
   return nextMain();
 };
-console.log('Aqui finaliza');
+// console.log('Aqui finaliza');

@@ -31,6 +31,9 @@ module.exports = (app, nextMain) => {
    * @code {401} si no hay cabecera de autenticación
    */
   app.get('/orders', requireAuth, (req, resp, next) => {
+    resp.jon({
+      mensaje: 'Lista de ordenes',
+    });
   });
 
   /**
@@ -55,6 +58,9 @@ module.exports = (app, nextMain) => {
    * @code {404} si la orden con `orderId` indicado no existe
    */
   app.get('/orders/:orderId', requireAuth, (req, resp, next) => {
+    resp.jon({
+      mensaje: 'Obtiene los datos de una orden especifico',
+    });
   });
 
   /**
@@ -84,6 +90,9 @@ module.exports = (app, nextMain) => {
    * @code {401} si no hay cabecera de autenticación
    */
   app.post('/orders', requireAuth, (req, resp, next) => {
+    resp.jon({
+      mensaje: 'Crea una nueva orden',
+    });
   });
 
   /**
