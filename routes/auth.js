@@ -28,7 +28,8 @@ module.exports = (app, nextMain) => {
     const { email, password } = req.body;
     // console.log({ email, password });
     if (!email || !password) {
-      return next(400);
+      resp.status(400).send({ message: 'Passwoord or email cant be empty' });
+      return next();
     }
 
     // TODO: autenticar a la usuarix
@@ -44,8 +45,9 @@ module.exports = (app, nextMain) => {
         resp.header('authorization', token);
         resp.status(200).send({ message: 'succesful', token });
       } else {
-        next(404);
+        resp.status(404).send({ message: 'user not registered' });
       }
+      // next();
     });
     // next();
   });

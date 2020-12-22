@@ -12,14 +12,6 @@ const { port, secret } = config;
 const app = express();
 
 // TODO: Conexión a la Base de Datos (MongoDB o MySQL)
-// dbUrl.connect((error) => {
-//   if (error) {
-//     throw error;
-//   } else {
-//     // eslint-disable-next-line no-console
-//     console.log('CONEXION EXITOSA');
-//   }
-// });
 
 app.use(cors());
 app.set('config', config);

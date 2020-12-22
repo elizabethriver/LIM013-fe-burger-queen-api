@@ -12,6 +12,34 @@ const {
 
 const { getAllData, postData } = require('../db-data/sql');
 
+// const findAdminExist = (callback) => {
+//   // try {
+//   pool.query('SELECT * FROM burguerqueen.users  where admin=1', (error, result) => {
+//     console.log(result);
+//     if (error) { throw error; }
+//     if (result && result.length > 0) {
+//       return callback(true);
+//     }
+//     return callback(false);
+//   });
+// };
+// const findAdminExist = () => new Promise((resolve, reject) => {
+//   pool.query('SELECT * FROM burguerqueen.users  where admin=1', (error, result) => {
+//     // console.log(result);
+//     if (error) { throw error; }
+//     if (result && result.length > 0) {
+//       console.log('eliza');
+//       resolve(result.length);
+//     }
+//     reject(error);
+//   });
+// });
+// let elements = 0;
+// findAdminExist().then((length) => {
+//   elements = length;
+//   console.log(`lenea 40 ${elements}`);
+//   return elements;
+// });
 const initAdminUser = (app, next) => {
   const { adminEmail, adminPassword } = app.get('config');
   // console.log({ adminEmail, adminPassword });
@@ -24,21 +52,36 @@ const initAdminUser = (app, next) => {
     password: bcrypt.hashSync(adminPassword, 10),
     roles: { admin: true },
   };
-  // console.log(adminUser);
+  console.log(adminUser);
   // TODO: crear usuaria admin
-  try {
-    const sql = `INSERT INTO burguerqueen.users (email, password, admin) VALUES ('${adminUser.email}', '${adminUser.password}', ${adminUser.roles.admin})`;
-    pool.query(sql, (err, result) => {
-      // console.log(err);
-      if (err.code === 'ER_DUP_ENTRY') {
-        // console.log('Adminuser already exists');
-      } else {
-        throw err;
+  const findAdminExist = () => new Promise((resolve, reject) => {
+    pool.query('SELECT * FROM burguerqueen.users where admin=1', (error, result) => {
+      if (error) { throw error; }
+      if (result) {
+        resolve(result.length);
       }
+      reject(error);
     });
-  } finally {
-    next();
-  }
+  });
+  findAdminExist()
+    .then((length) => {
+      if (length === 0) {
+        try {
+          const sql = `INSERT INTO burguerqueen.users (email, password, admin) VALUES ('${adminUser.email}', '${adminUser.password}', ${adminUser.roles.admin})`;
+          pool.query(sql, (err, result) => {
+            if (err) { throw err; }
+            console.log('user admin created');
+          });
+        } finally {
+          next();
+        }
+      } else {
+        next();
+      }
+    })
+    .catch((error) => {
+      console.error(error);
+    });
 };
 
 /*
@@ -134,9 +177,9 @@ module.exports = (app, next) => {
    * @code {403} si ya existe usuaria con ese `email`
    */
   app.post('/users', requireAdmin, (req, resp, next) => {
-    if (!req.headers) {
-      return next(401);
-    }
+    // if (!req.headers) {
+    //   return resp.status(401).end();
+    // }
     const { email, password, roles } = req.body;
 
     const user = {
@@ -144,8 +187,9 @@ module.exports = (app, next) => {
       password: bcrypt.hashSync(password, 10),
       admin: roles.admin,
     };
+
     if (!email || !password) {
-      return next(400);
+      return resp.status(400).end();
     }
     // eslint-disable-next-line no-useless-catch
     try {
@@ -154,12 +198,18 @@ module.exports = (app, next) => {
         if (err) {
           if (err.code === 'ER_DUP_ENTRY') {
             console.log('User already exists');
-            return next(403);
+            return resp.status(403).end();
           }
-        }
-        else{
+        } else {
           console.log('user registered');
-          return next(200);
+          // const user = {
+          //   email,
+          //   password: bcrypt.hashSync(password, 10),
+          //   admin: { roles: roles.admin}
+          // };
+          // resp.body
+          // return next(200);
+          return resp.status(200).end();
         }
       });
     } catch (err) {

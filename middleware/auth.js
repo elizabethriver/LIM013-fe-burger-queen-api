@@ -37,7 +37,6 @@ console.log({ authorization });
 };
 
 module.exports.isAuthenticated = (req) => {
-  console.log(req);
   if (req.body) {
     return true;
   }
