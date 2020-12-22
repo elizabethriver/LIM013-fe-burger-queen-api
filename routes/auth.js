@@ -44,8 +44,10 @@ module.exports = (app, nextMain) => {
         const token = jwt.sign({ email: payload.email, password: payload.password }, secret, { expiresIn: 60 * 60 });
         resp.header('authorization', token);
         resp.status(200).send({ message: 'succesful', token });
+        console.log('user register');
       } else {
         resp.status(404).send({ message: 'user not registered' });
+        console.log('user not register');
       }
       // next();
     });
