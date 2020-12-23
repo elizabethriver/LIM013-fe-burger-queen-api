@@ -52,7 +52,7 @@ const initAdminUser = (app, next) => {
     password: bcrypt.hashSync(adminPassword, 10),
     roles: { admin: true },
   };
-  console.log(adminUser);
+  // console.log(adminUser);
   // TODO: crear usuaria admin
   const findAdminExist = () => new Promise((resolve, reject) => {
     pool.query('SELECT * FROM burguerqueen.users where admin=1', (error, result) => {
@@ -177,9 +177,6 @@ module.exports = (app, next) => {
    * @code {403} si ya existe usuaria con ese `email`
    */
   app.post('/users', requireAdmin, (req, resp, next) => {
-    // if (!req.headers) {
-    //   return resp.status(401).end();
-    // }
     const { email, password, roles } = req.body;
 
     const user = {
@@ -187,34 +184,65 @@ module.exports = (app, next) => {
       password: bcrypt.hashSync(password, 10),
       admin: roles.admin,
     };
-
     if (!email || !password) {
       return resp.status(400).end();
     }
-    // eslint-disable-next-line no-useless-catch
+
     try {
-      const sql = `INSERT INTO burguerqueen.users (email, password, admin) VALUES ('${user.email}', '${user.password}', ${user.admin})`;
-      pool.query(sql, (err, result) => {
-        if (err) {
-          if (err.code === 'ER_DUP_ENTRY') {
-            console.log('User already exists');
-            return resp.status(403).end();
-          }
-        } else {
-          console.log('user registered');
-          // const user = {
-          //   email,
-          //   password: bcrypt.hashSync(password, 10),
-          //   admin: { roles: roles.admin}
-          // };
-          // resp.body
-          // return next(200);
-          return resp.status(200).end();
+      pool.query(`SELECT * FROM burguerqueen.users where email='${user.email}'`, (error, result) => {
+        if (error) { throw error; }
+        console.log(result);
+        if (result.length > 0) {
+          return resp.status(403).send({ message: 'Email already exists' }).end();
         }
+        const sql = `INSERT INTO burguerqueen.users (email, password, admin) VALUES ('${user.email}', '${user.password}', ${user.admin})`;
+        pool.query(sql, (err, result) => {
+          if (err) {
+            if (err.code === 'ER_DUP_ENTRY') {
+              console.log('User already exists');
+              return resp.status(403).end();
+            }
+          } else {
+            console.log('user registered');
+            const userRegister = {
+              id: result.insertId,
+              email: user.email,
+              admin: { roles: user.admin },
+            };
+              // return next(200);
+            return resp.status(200).json(userRegister).end();
+          }
+        });
       });
-    } catch (err) {
-      throw err;
+    } catch (error) {
+      next(404);
     }
+
+    // eslint-disable-next-line no-useless-catch
+    // try {
+    // eslint-disable-next-line max-len
+    //   const sql = `INSERT INTO burguerqueen.users (email, password, admin) VALUES ('${user.email}', '${user.password}', ${user.admin})`;
+    //   pool.query(sql, (err, result) => {
+    //     if (err) {
+    //       if (err.code === 'ER_DUP_ENTRY') {
+    //         console.log('User already exists');
+    //         return resp.status(403).end();
+    //       }
+    //     } else {
+    //       console.log('user registered');
+
+    //       const userRegister = {
+    //         id: result.insertId,
+    //         email: user.email,
+    //         admin: { roles: user.admin },
+    //       };
+    //       // return next(200);
+    //       return resp.status(200).json(userRegister).end();
+    //     }
+    //   });
+    // } catch (err) {
+    //   throw err;
+    // }
   });
 
   /**

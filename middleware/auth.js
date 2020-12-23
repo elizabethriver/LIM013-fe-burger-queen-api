@@ -3,7 +3,6 @@ const pool = require('../db-data/modelo');
 
 module.exports = (secret) => (req, resp, next) => {
   const { authorization } = req.headers;
-console.log({ authorization });
   if (!authorization) {
     return next();
   }
@@ -21,12 +20,12 @@ console.log({ authorization });
 
     // TODO: Verificar identidad del usuario usando `decodeToken.uid`
     try {
-      pool.query('SELECT * FROM burguerqueen.users', (error, result) => {
+      pool.query(`SELECT * FROM burguerqueen.users where email='${decodedToken.email}'`, (error, result) => {
         if (error) { throw error; }
-        // console.log(decodedToken);
+
         const userVerified = result.find((user) => user.email === decodedToken.email);
         if (userVerified) {
-          req.user = userVerified;
+          // req.user = userVerified;
           next();
         } else { next(404); }
       });
