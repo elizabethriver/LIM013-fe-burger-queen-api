@@ -12,34 +12,6 @@ const {
 
 const { getAllData, postData } = require('../db-data/sql');
 
-// const findAdminExist = (callback) => {
-//   // try {
-//   pool.query('SELECT * FROM burguerqueen.users  where admin=1', (error, result) => {
-//     console.log(result);
-//     if (error) { throw error; }
-//     if (result && result.length > 0) {
-//       return callback(true);
-//     }
-//     return callback(false);
-//   });
-// };
-// const findAdminExist = () => new Promise((resolve, reject) => {
-//   pool.query('SELECT * FROM burguerqueen.users  where admin=1', (error, result) => {
-//     // console.log(result);
-//     if (error) { throw error; }
-//     if (result && result.length > 0) {
-//       console.log('eliza');
-//       resolve(result.length);
-//     }
-//     reject(error);
-//   });
-// });
-// let elements = 0;
-// findAdminExist().then((length) => {
-//   elements = length;
-//   console.log(`lenea 40 ${elements}`);
-//   return elements;
-// });
 const initAdminUser = (app, next) => {
   const { adminEmail, adminPassword } = app.get('config');
   // console.log({ adminEmail, adminPassword });
@@ -178,20 +150,22 @@ module.exports = (app, next) => {
    */
   app.post('/users', requireAdmin, (req, resp, next) => {
     const { email, password, roles } = req.body;
+    // console.log(`otro texot ${{ email, password, roles }}`);
 
     const user = {
       email,
       password: bcrypt.hashSync(password, 10),
       admin: roles.admin,
     };
+    // console.log(user);
     if (!email || !password) {
-      return resp.status(400).end();
+      return resp.status(400).send({ message: 'email or passwoord empty' }).end();
     }
 
     try {
       pool.query(`SELECT * FROM burguerqueen.users where email='${user.email}'`, (error, result) => {
         if (error) { throw error; }
-        console.log(result);
+        // console.log(result);
         if (result.length > 0) {
           return resp.status(403).send({ message: 'Email already exists' }).end();
         }

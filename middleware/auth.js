@@ -3,17 +3,22 @@ const pool = require('../db-data/modelo');
 
 module.exports = (secret) => (req, resp, next) => {
   const { authorization } = req.headers;
+  // console.log({ authorization });
   if (!authorization) {
     return next();
   }
 
   const [type, token] = authorization.split(' ');
+  // console.log([type, token]);
 
   if (type.toLowerCase() !== 'bearer') {
+    // console.log(type);
     return next();
   }
 
   jwt.verify(token, secret, (err, decodedToken) => {
+    // console.log(token);
+    // console.log(decodedToken);
     if (err) {
       return next(403);
     }
@@ -21,11 +26,13 @@ module.exports = (secret) => (req, resp, next) => {
     // TODO: Verificar identidad del usuario usando `decodeToken.uid`
     try {
       pool.query(`SELECT * FROM burguerqueen.users where email='${decodedToken.email}'`, (error, result) => {
+        // console.log(result);
         if (error) { throw error; }
-
         const userVerified = result.find((user) => user.email === decodedToken.email);
+        // console.log(userVerified);
         if (userVerified) {
-          // req.user = userVerified;
+          req.user = userVerified;
+          console.log(req.user);
           next();
         } else { next(404); }
       });
@@ -36,7 +43,8 @@ module.exports = (secret) => (req, resp, next) => {
 };
 
 module.exports.isAuthenticated = (req) => {
-  if (req.body) {
+  if (req.user) {
+    // console.log(req.user);
     return true;
   }
   return false;
@@ -45,7 +53,8 @@ module.exports.isAuthenticated = (req) => {
 
 module.exports.isAdmin = (req) => {
   // TODO: decidir por la informacion del request si la usuaria es admin
-  if (req.body) {
+  if (req.user.admin === 1) {
+    // console.log(req.user.admin);
     return true;
   }
   return false;

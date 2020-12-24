@@ -5,9 +5,7 @@ const pool = require('../db-data/modelo');
 // const users = require('../controller/users');
 
 const { secret } = config;
-// console.log( { secret } );
-// console.log(secret);
-// console.log(adminEmail);
+
 /** @module auth */
 /** @module auth */
 /** @module auth */
@@ -33,24 +31,29 @@ module.exports = (app, nextMain) => {
     }
 
     // TODO: autenticar a la usuarix
-    pool.query(`SELECT * FROM burguerqueen.users WHERE email = '${email}'`, (error, result) => {
-      if (error) throw error;
-      // eslint-disable-next-line max-len
-      const payload = result.find((user) => user.email === email && bcrypt.compareSync(password, user.password));
-      // console.log(payload);
-
-      if (payload) {
+    try {
+      pool.query(`SELECT * FROM burguerqueen.users WHERE email = '${email}'`, (error, result) => {
+        if (error) throw error;
         // eslint-disable-next-line max-len
-        const token = jwt.sign({ email: payload.email, password: payload.password }, secret, { expiresIn: 60 * 60 });
-        resp.header('authorization', token);
-        resp.status(200).send({ message: 'succesful', token });
-        console.log('user register');
-      } else {
-        resp.status(404).send({ message: 'user not registered' });
-        console.log('user not register');
-      }
-      // next();
-    });
+        const payload = result.find((user) => user.email === email && bcrypt.compareSync(password, user.password));
+        // console.log(payload);
+        if (payload) {
+          // eslint-disable-next-line max-len
+          const token = jwt.sign({ email: payload.email, password: payload.password }, secret, { expiresIn: 60 * 60 });
+          resp.header('authorization', token);
+          resp.status(200).send({ message: 'succesful', token });
+          // console.log('user register');
+        } else {
+          // resp.status(404).send({ message: 'user not registered' });
+          // console.log('user not register');
+          next(404);
+        }
+        // next();
+      });
+    } catch (error) {
+      return error;
+    }
+
     // next();
   });
   return nextMain();
