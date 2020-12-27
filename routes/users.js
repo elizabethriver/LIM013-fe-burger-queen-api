@@ -1,6 +1,5 @@
 const bcrypt = require('bcrypt');
 const isNumber = require('is-number');
-
 const {
   requireAuth,
   requireAdmin,
@@ -219,15 +218,16 @@ module.exports = (app, next) => {
    */
   app.put('/users/:uid', requireAdmin && requireAuth, (req, resp, next) => {
     const { email, password, roles } = req.body;
-    console.log(req.user);
-    // console.log({ email, password, roles });
+
+    // console.log(req);
+    // console.log({ email, pa,ssword, roles });
     const keyword = (isNumber(req.params.uid)) ? 'id' : 'email';
     const isAdmin = req.user.admin === 1;
     // eslint-disable-next-line max-len
-    // // const canEdit = (req.params.uid.includes('@')) ? (req.user.email === req.params.uid) : (req.user.id === Number(req.params.uid));
+    const canEdit = (req.params.uid.includes('@')) ? (req.user.email === req.params.uid) : (req.user.id === Number(req.params.uid));
     // // console.log(canEdit);
-    if (!(isAdmin)) {
-      return resp.status(403).send({ message: 'You do not have enough permissions' });
+    if (!(canEdit || isAdmin)) {
+      return resp.status(403).send({ message: 'You do not have admin permissions' });
     }
 
     // console.log(keyword);
@@ -247,19 +247,15 @@ module.exports = (app, next) => {
     // console.log(updatedDetails);
 
     getDataByKeyword('users', keyword, req.params.uid)
-      .then((user) => {
-        console.log(user);
+      .then(() => {
         if (!req.params.uid || !(email || password || roles)) {
-          // eslint-disable-next-line max-len
-          // console.log(req.headers.authorization);
-          // eslint-disable-next-line max-len
           return dataError(!req.headers.authorization, resp);
         }
+
         updateDataByKeyword('users', updatedDetails, keyword, req.params.uid)
           .then(() => {
-            getDataByKeyword('users', 'email', email)
+            getDataByKeyword('users', 'id', req.params.uid)
               .then((user) => {
-                console.log(user);
                 resp.status(200).send(
                   {
                     id: user[0].id,
@@ -272,10 +268,7 @@ module.exports = (app, next) => {
           .catch((err) => {
             console.error(err);
           });
-      }).catch((error) => {
-        resp.status(404).send({ message: `El usuario con ${keyword} no existe.` });
-        console.error(error);
-      });
+      }).catch(() => resp.status(404).send({ message: `El usuario con ${keyword} no existe.` }).end());
   });
 
   /**
@@ -295,6 +288,7 @@ module.exports = (app, next) => {
    * @code {404} si la usuaria solicitada no existe
    */
   app.delete('/users/:uid', requireAuth, (req, resp, next) => {
+
   });
 
   initAdminUser(app, next);

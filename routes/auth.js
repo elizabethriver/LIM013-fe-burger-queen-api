@@ -36,17 +36,16 @@ module.exports = (app, nextMain) => {
         if (error) throw error;
         // eslint-disable-next-line max-len
         const payload = result.find((user) => user.email === email && bcrypt.compareSync(password, user.password));
-        // console.log(payload);
+        console.log(result);
         if (payload) {
           // eslint-disable-next-line max-len
-          const token = jwt.sign({ email: payload.email, password: payload.password }, secret, { expiresIn: 60 * 60 });
+          const token = jwt.sign({ id: payload.id, email: payload.email, password: payload.password }, secret, { expiresIn: 60 * 60 });
           resp.header('authorization', token);
           resp.status(200).send({ message: 'succesful', token });
           // console.log('user register');
         } else {
           // resp.status(404).send({ message: 'user not registered' });
-          // console.log('user not register');
-          next(404);
+          resp.status(404).send({ message: 'user not registered' });
         }
         // next();
       });
