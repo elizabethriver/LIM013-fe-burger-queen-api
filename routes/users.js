@@ -1,4 +1,5 @@
 const bcrypt = require('bcrypt');
+const isNumber = require('is-number');
 
 const {
   requireAuth,
@@ -10,7 +11,10 @@ const {
   getUsers,
 } = require('../controller/users');
 
-const { getAllData, postData } = require('../db-data/sql');
+const { getDataByKeyword, updateDataByKeyword } = require('../db-data/sql');
+const users = require('../controller/users');
+
+const { validateEmail, checkPassword, dataError } = require('../utilsFunc/utils');
 
 const initAdminUser = (app, next) => {
   const { adminEmail, adminPassword } = app.get('config');
@@ -27,7 +31,7 @@ const initAdminUser = (app, next) => {
   // console.log(adminUser);
   // TODO: crear usuaria admin
   const findAdminExist = () => new Promise((resolve, reject) => {
-    pool.query('SELECT * FROM burguerqueen.users where admin=1', (error, result) => {
+    pool.query('SELECT * FROM users where admin=1', (error, result) => {
       if (error) { throw error; }
       if (result) {
         resolve(result.length);
@@ -39,8 +43,9 @@ const initAdminUser = (app, next) => {
     .then((length) => {
       if (length === 0) {
         try {
-          const sql = `INSERT INTO burguerqueen.users (email, password, admin) VALUES ('${adminUser.email}', '${adminUser.password}', ${adminUser.roles.admin})`;
+          const sql = `INSERT INTO users (email, password, admin) VALUES ('${adminUser.email}', '${adminUser.password}', ${adminUser.roles.admin})`;
           pool.query(sql, (err, result) => {
+            // console.log(pool);
             if (err) { throw err; }
             console.log('user admin created');
           });
@@ -124,11 +129,8 @@ module.exports = (app, next) => {
    * @code {404} si la usuaria solicitada no existe
    */
   app.get('/users/:uid', requireAuth, (req, resp) => {
-    resp.jon({
-      mensaje: 'Obtiene información de una usuaria',
-    });
-  });
 
+  });
   /**
    * @name POST /users
    * @description Crea una usuaria
@@ -163,13 +165,13 @@ module.exports = (app, next) => {
     }
 
     try {
-      pool.query(`SELECT * FROM burguerqueen.users where email='${user.email}'`, (error, result) => {
+      pool.query(`SELECT * FROM users where email='${user.email}'`, (error, result) => {
         if (error) { throw error; }
         // console.log(result);
         if (result.length > 0) {
           return resp.status(403).send({ message: 'Email already exists' }).end();
         }
-        const sql = `INSERT INTO burguerqueen.users (email, password, admin) VALUES ('${user.email}', '${user.password}', ${user.admin})`;
+        const sql = `INSERT INTO users (email, password, admin) VALUES ('${user.email}', '${user.password}', ${user.admin})`;
         pool.query(sql, (err, result) => {
           if (err) {
             if (err.code === 'ER_DUP_ENTRY') {
@@ -191,32 +193,6 @@ module.exports = (app, next) => {
     } catch (error) {
       next(404);
     }
-
-    // eslint-disable-next-line no-useless-catch
-    // try {
-    // eslint-disable-next-line max-len
-    //   const sql = `INSERT INTO burguerqueen.users (email, password, admin) VALUES ('${user.email}', '${user.password}', ${user.admin})`;
-    //   pool.query(sql, (err, result) => {
-    //     if (err) {
-    //       if (err.code === 'ER_DUP_ENTRY') {
-    //         console.log('User already exists');
-    //         return resp.status(403).end();
-    //       }
-    //     } else {
-    //       console.log('user registered');
-
-    //       const userRegister = {
-    //         id: result.insertId,
-    //         email: user.email,
-    //         admin: { roles: user.admin },
-    //       };
-    //       // return next(200);
-    //       return resp.status(200).json(userRegister).end();
-    //     }
-    //   });
-    // } catch (err) {
-    //   throw err;
-    // }
   });
 
   /**
@@ -241,10 +217,65 @@ module.exports = (app, next) => {
    * @code {403} una usuaria no admin intenta de modificar sus `roles`
    * @code {404} si la usuaria solicitada no existe
    */
-  app.put('/users/:uid', requireAuth, (req, resp, next) => {
-    resp.jon({
-      mensaje: 'eliminas una usuaria',
-    });
+  app.put('/users/:uid', requireAdmin && requireAuth, (req, resp, next) => {
+    const { email, password, roles } = req.body;
+    console.log(req.user);
+    // console.log({ email, password, roles });
+    const keyword = (isNumber(req.params.uid)) ? 'id' : 'email';
+    const isAdmin = req.user.admin === 1;
+    // eslint-disable-next-line max-len
+    // // const canEdit = (req.params.uid.includes('@')) ? (req.user.email === req.params.uid) : (req.user.id === Number(req.params.uid));
+    // // console.log(canEdit);
+    if (!(isAdmin)) {
+      return resp.status(403).send({ message: 'You do not have enough permissions' });
+    }
+
+    // console.log(keyword);
+    if (!email || !password) {
+      return resp.status(400).send({ message: 'email or passwoord empty' }).end();
+    }
+
+    const validateEmailResp = validateEmail(email);
+    const validatePasswordResp = checkPassword(password);
+    const role = roles ? roles.admin : false;
+    // console.log(role);
+    const updatedDetails = {
+      ...((email && validateEmailResp) && { email, admin: role }),
+      // eslint-disable-next-line max-len
+      ...((password && validatePasswordResp) && { password: bcrypt.hashSync(password, 10), admin: role }),
+    };
+    // console.log(updatedDetails);
+
+    getDataByKeyword('users', keyword, req.params.uid)
+      .then((user) => {
+        console.log(user);
+        if (!req.params.uid || !(email || password || roles)) {
+          // eslint-disable-next-line max-len
+          // console.log(req.headers.authorization);
+          // eslint-disable-next-line max-len
+          return dataError(!req.headers.authorization, resp);
+        }
+        updateDataByKeyword('users', updatedDetails, keyword, req.params.uid)
+          .then(() => {
+            getDataByKeyword('users', 'email', email)
+              .then((user) => {
+                console.log(user);
+                resp.status(200).send(
+                  {
+                    id: user[0].id,
+                    email,
+                    admin: roles.admin,
+                  },
+                );
+              });
+          })
+          .catch((err) => {
+            console.error(err);
+          });
+      }).catch((error) => {
+        resp.status(404).send({ message: `El usuario con ${keyword} no existe.` });
+        console.error(error);
+      });
   });
 
   /**

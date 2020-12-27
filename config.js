@@ -4,11 +4,11 @@ require('dotenv').config({ path: 'secrets.env' });
 
 const db = {
   host: process.env.DB_HOST,
-  datebase: process.env.DB_HOST,
+  database: process.env.DB_NAME,
   user: process.env.DB_USER_DB,
   password: process.env.DB_PASS,
 };
-// console.log(process.env.JWT_SECRET);
+// console.log(db);
 // const dbUrl = mysql.createConnection(db);
 
 exports.port = process.argv[2] || process.env.PORT || 8080;

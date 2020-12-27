@@ -25,14 +25,14 @@ module.exports = (secret) => (req, resp, next) => {
 
     // TODO: Verificar identidad del usuario usando `decodeToken.uid`
     try {
-      pool.query(`SELECT * FROM burguerqueen.users where email='${decodedToken.email}'`, (error, result) => {
+      pool.query(`SELECT * FROM users where email='${decodedToken.email}'`, (error, result) => {
         // console.log(result);
         if (error) { throw error; }
         const userVerified = result.find((user) => user.email === decodedToken.email);
         // console.log(userVerified);
         if (userVerified) {
           req.user = userVerified;
-          console.log(req.user);
+          // console.log(req.user);
           next();
         } else { next(404); }
       });

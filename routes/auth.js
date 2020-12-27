@@ -32,7 +32,7 @@ module.exports = (app, nextMain) => {
 
     // TODO: autenticar a la usuarix
     try {
-      pool.query(`SELECT * FROM burguerqueen.users WHERE email = '${email}'`, (error, result) => {
+      pool.query(`SELECT * FROM users WHERE email = '${email}'`, (error, result) => {
         if (error) throw error;
         // eslint-disable-next-line max-len
         const payload = result.find((user) => user.email === email && bcrypt.compareSync(password, user.password));
