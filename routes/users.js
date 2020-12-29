@@ -128,9 +128,9 @@ module.exports = (app, next) => {
    * @code {404} si la usuaria solicitada no existe
    */
   app.get('/users/:uid', requireAuth, (req, resp) => {
-    console.log(req);
+    // console.log(req);
     const keyword = (isNumber(req.params.uid)) ? 'id' : 'email';
-    console.log(keyword);
+    // console.log(keyword);
     const isAdmin = req.user.admin === 1;
     // // console.log(isAdmin);
     // // eslint-disable-next-line max-len
@@ -141,17 +141,22 @@ module.exports = (app, next) => {
       return resp.status(403).send({ message: 'You do not have admin permissions' });
     }
 
-    const userGet = {
-      id: req.params.uid,
-    };
     getDataByKeyword('users', keyword, req.params.uid)
       .then((result) => {
+        // console.log(result);
         if (!req.params.uid) {
           return dataError(!req.headers.authorization, resp);
         }
         const admin = !!(result[0].admin);
-        userGet.email = result[0].email;
-        userGet.roles = { admin };
+        const userGet = {
+          id: result[0].id,
+          email: result[0].email,
+          roles: { admin },
+        };
+        // userGet.id = result[0].id;
+        // userGet.email = result[0].email;
+        // userGet.roles = { admin };
+
 
         resp.status(200).send(userGet);
       }).catch(() => {
@@ -329,21 +334,28 @@ module.exports = (app, next) => {
       return resp.status(403).send({ message: 'You do not have admin permissions' });
     }
 
-    const userDeleted = {
-      id: req.params.uid,
-    };
+    // const userDeleted = {
+    //   id: req.params.uid,
+    // };
+
     getDataByKeyword('users', keyword, req.params.uid)
       .then((result) => {
         if (!req.params.uid) {
           return dataError(!req.headers.authorization, resp);
         }
+        // const admin = !!(result[0].admin);
+        // userDeleted.email = result[0].email;
+        // userDeleted.roles = { admin };
         const admin = !!(result[0].admin);
-        userDeleted.email = result[0].email;
-        userDeleted.roles = { admin };
+        const userGet = {
+          id: result[0].id,
+          email: result[0].email,
+          roles: { admin },
+        };
 
         deleteData('users', keyword, req.params.uid)
           .then(() => {
-            resp.status(200).send(userDeleted);
+            resp.status(200).send(userGet);
           })
           .catch((err) => {
             console.error(err);
