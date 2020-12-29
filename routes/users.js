@@ -10,7 +10,7 @@ const {
   getUsers,
 } = require('../controller/users');
 
-const { getDataByKeyword, updateDataByKeyword } = require('../db-data/sql');
+const { getDataByKeyword, updateDataByKeyword, deleteData } = require('../db-data/sql');
 const users = require('../controller/users');
 
 const { validateEmail, checkPassword, dataError } = require('../utilsFunc/utils');
@@ -46,7 +46,7 @@ const initAdminUser = (app, next) => {
           pool.query(sql, (err, result) => {
             // console.log(pool);
             if (err) { throw err; }
-            console.log('user admin created');
+            // console.log('user admin created');
           });
         } finally {
           next();
@@ -128,7 +128,36 @@ module.exports = (app, next) => {
    * @code {404} si la usuaria solicitada no existe
    */
   app.get('/users/:uid', requireAuth, (req, resp) => {
+    console.log(req);
+    const keyword = (isNumber(req.params.uid)) ? 'id' : 'email';
+    console.log(keyword);
+    const isAdmin = req.user.admin === 1;
+    // // console.log(isAdmin);
+    // // eslint-disable-next-line max-len
+    // eslint-disable-next-line max-len
+    const canEdit = (req.params.uid.includes('@')) ? (req.user.email === req.params.uid) : (req.user.id === Number(req.params.uid));
+    // console.log(canEdit);
+    if (!(canEdit || isAdmin)) {
+      return resp.status(403).send({ message: 'You do not have admin permissions' });
+    }
 
+    const userGet = {
+      id: req.params.uid,
+    };
+    getDataByKeyword('users', keyword, req.params.uid)
+      .then((result) => {
+        if (!req.params.uid) {
+          return dataError(!req.headers.authorization, resp);
+        }
+        const admin = !!(result[0].admin);
+        userGet.email = result[0].email;
+        userGet.roles = { admin };
+
+        resp.status(200).send(userGet);
+      }).catch(() => {
+        // console.log(error);
+        resp.status(404).send({ message: `El usuario con ${keyword} no existe para eliminar.` }).end();
+      });
   });
   /**
    * @name POST /users
@@ -174,11 +203,11 @@ module.exports = (app, next) => {
         pool.query(sql, (err, result) => {
           if (err) {
             if (err.code === 'ER_DUP_ENTRY') {
-              console.log('User already exists');
+              // console.log('User already exists');
               return resp.status(403).end();
             }
           } else {
-            console.log('user registered');
+            // console.log('user registered');
             const userRegister = {
               id: result.insertId,
               email: user.email,
@@ -248,7 +277,7 @@ module.exports = (app, next) => {
 
     getDataByKeyword('users', keyword, req.params.uid)
       .then(() => {
-        if (!req.params.uid || !(email || password || roles)) {
+        if (!req.params.uid) {
           return dataError(!req.headers.authorization, resp);
         }
 
@@ -287,8 +316,42 @@ module.exports = (app, next) => {
    * @code {403} si no es ni admin o la misma usuaria
    * @code {404} si la usuaria solicitada no existe
    */
-  app.delete('/users/:uid', requireAuth, (req, resp, next) => {
+  app.delete('/users/:uid', requireAdmin && requireAuth, (req, resp, next) => {
+    // console.log(req);
+    const keyword = (isNumber(req.params.uid)) ? 'id' : 'email';
+    // console.log(keyword);
+    const isAdmin = req.user.admin === 1;
+    // console.log(isAdmin);
+    // eslint-disable-next-line max-len
+    const canEdit = (req.params.uid.includes('@')) ? (req.user.email === req.params.uid) : (req.user.id === Number(req.params.uid));
+    // console.log(canEdit);
+    if (!(canEdit || isAdmin)) {
+      return resp.status(403).send({ message: 'You do not have admin permissions' });
+    }
 
+    const userDeleted = {
+      id: req.params.uid,
+    };
+    getDataByKeyword('users', keyword, req.params.uid)
+      .then((result) => {
+        if (!req.params.uid) {
+          return dataError(!req.headers.authorization, resp);
+        }
+        const admin = !!(result[0].admin);
+        userDeleted.email = result[0].email;
+        userDeleted.roles = { admin };
+
+        deleteData('users', keyword, req.params.uid)
+          .then(() => {
+            resp.status(200).send(userDeleted);
+          })
+          .catch((err) => {
+            console.error(err);
+          });
+      }).catch(() => {
+        // console.log(error);
+        resp.status(404).send({ message: `El usuario con ${keyword} no existe para eliminar.` }).end();
+      });
   });
 
   initAdminUser(app, next);
