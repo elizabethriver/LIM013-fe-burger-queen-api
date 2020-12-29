@@ -36,8 +36,8 @@ module.exports = (app, nextMain) => {
         if (error) throw error;
         // eslint-disable-next-line max-len
         const payload = result.find((user) => user.email === email && bcrypt.compareSync(password, user.password));
-        console.log(result);
-        console.log(payload);
+        // console.log(result);
+        // console.log(payload);
         if (payload) {
           // eslint-disable-next-line max-len
           const token = jwt.sign({ id: payload.id, email: payload.email, password: payload.password }, secret, { expiresIn: 60 * 60 });

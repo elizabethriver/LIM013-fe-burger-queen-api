@@ -10,7 +10,10 @@ const {
   getUsers,
 } = require('../controller/users');
 
-const { getDataByKeyword, updateDataByKeyword, deleteData } = require('../db-data/sql');
+const {
+  // eslint-disable-next-line max-len
+  getDataByKeywordPost, postDataIn, postData, findAdminExist, getDataByKeyword, updateDataByKeyword, deleteData,
+} = require('../db-data/sql');
 const users = require('../controller/users');
 
 const { validateEmail, checkPassword, dataError } = require('../utilsFunc/utils');
@@ -29,28 +32,33 @@ const initAdminUser = (app, next) => {
   };
   // console.log(adminUser);
   // TODO: crear usuaria admin
-  const findAdminExist = () => new Promise((resolve, reject) => {
-    pool.query('SELECT * FROM users where admin=1', (error, result) => {
-      if (error) { throw error; }
-      if (result) {
-        resolve(result.length);
-      }
-      reject(error);
-    });
-  });
-  findAdminExist()
+  const keyword = 'admin';
+
+  findAdminExist('users', keyword, 1)
     .then((length) => {
       if (length === 0) {
-        try {
-          const sql = `INSERT INTO users (email, password, admin) VALUES ('${adminUser.email}', '${adminUser.password}', ${adminUser.roles.admin})`;
-          pool.query(sql, (err, result) => {
-            // console.log(pool);
-            if (err) { throw err; }
-            // console.log('user admin created');
+        // eslint-disable-next-line no-unused-expressions
+        postData('users', 'email', 'password', 'admin', adminUser.email, adminUser.password, adminUser.roles.admin)
+          .then(() => {
+            console.log('user admin created');
+            // console.log(result);
+            next();
+          })
+          .catch((error) => {
+            console.log(error);
           });
-        } finally {
-          next();
-        }
+        // try {
+        // // eslint-disable-next-line max-len
+        // eslint-disable-next-line max-len
+        //   const sql = `INSERT INTO users (email, password, admin) VALUES ('${adminUser.email}', '${adminUser.password}', ${adminUser.roles.admin})`;
+        //   pool.query(sql, (err, result) => {
+        //     // console.log(pool);
+        //     if (err) { throw err; }
+        //     // console.log('user admin created');
+        //   });
+        // } finally {
+        //   next();
+        // }
       } else {
         next();
       }
@@ -156,8 +164,6 @@ module.exports = (app, next) => {
         // userGet.id = result[0].id;
         // userGet.email = result[0].email;
         // userGet.roles = { admin };
-
-
         resp.status(200).send(userGet);
       }).catch(() => {
         // console.log(error);
@@ -184,6 +190,7 @@ module.exports = (app, next) => {
    * @code {403} si ya existe usuaria con ese `email`
    */
   app.post('/users', requireAdmin, (req, resp, next) => {
+    // console.log(req);
     const { email, password, roles } = req.body;
     // console.log(`otro texot ${{ email, password, roles }}`);
 
@@ -196,36 +203,70 @@ module.exports = (app, next) => {
     if (!email || !password) {
       return resp.status(400).send({ message: 'email or passwoord empty' }).end();
     }
-
-    try {
-      pool.query(`SELECT * FROM users where email='${user.email}'`, (error, result) => {
-        if (error) { throw error; }
+    getDataByKeywordPost('users', 'email', user.email)
+      .then((result) => {
+        if (!req.headers.authorization) {
+          return dataError(!req.headers.authorization, resp);
+        }
         // console.log(result);
         if (result.length > 0) {
-          return resp.status(403).send({ message: 'Email already exists' }).end();
-        }
-        const sql = `INSERT INTO users (email, password, admin) VALUES ('${user.email}', '${user.password}', ${user.admin})`;
-        pool.query(sql, (err, result) => {
-          if (err) {
-            if (err.code === 'ER_DUP_ENTRY') {
-              // console.log('User already exists');
-              return resp.status(403).end();
-            }
-          } else {
-            // console.log('user registered');
-            const userRegister = {
-              id: result.insertId,
-              email: user.email,
-              admin: { roles: user.admin },
-            };
+          resp.status(403).send({ message: 'Email already exists' }).end();
+        } else {
+        // console.log(result);
+          postDataIn('users', 'email', 'password', 'admin', user.email, user.password, user.admin)
+            .then((result) => {
+              console.log('user registered');
+              const userRegister = {
+                id: result.insertId,
+                email: user.email,
+                admin: { roles: user.admin },
+              };
               // return next(200);
-            return resp.status(200).json(userRegister).end();
-          }
-        });
+              resp.status(200).send(userRegister).end();
+            });
+          // .catch((err) => {
+          //   if (err.code === 'ER_DUP_ENTRY') {
+          //     console.log('User already exists');
+          //     resp.status(403).end();
+          //   }
+          // });
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+        next(404);
       });
-    } catch (error) {
-      next(404);
-    }
+
+    // try {
+    //   pool.query(`SELECT * FROM users where email='${user.email}'`, (error, result) => {
+    //     if (error) { throw error; }
+    //     // console.log(result);
+    //     if (result.length > 0) {
+    //       return resp.status(403).send({ message: 'Email already exists' }).end();
+    //     }
+    // eslint-disable-next-line max-len
+    //     const sql = `INSERT INTO users (email, password, admin) VALUES ('${user.email}', '${user.password}', ${user.admin})`;
+    //     pool.query(sql, (err, result) => {
+    //       if (err) {
+    //         if (err.code === 'ER_DUP_ENTRY') {
+    //           // console.log('User already exists');
+    //           return resp.status(403).end();
+    //         }
+    //       } else {
+    //         // console.log('user registered');
+    //         const userRegister = {
+    //           id: result.insertId,
+    //           email: user.email,
+    //           admin: { roles: user.admin },
+    //         };
+    //           // return next(200);
+    //         return resp.status(200).json(userRegister).end();
+    //       }
+    //     });
+    //   });
+    // } catch (error) {
+    //   next(404);
+    // }
   });
 
   /**
