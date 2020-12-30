@@ -14,7 +14,7 @@ const {
   // eslint-disable-next-line max-len
   getDataByKeywordPost, postDataIn, postData, findAdminExist, getDataByKeyword, updateDataByKeyword, deleteData,
 } = require('../db-data/sql');
-const users = require('../controller/users');
+// const users = require('../controller/users');
 
 const { validateEmail, checkPassword, dataError } = require('../utilsFunc/utils');
 
