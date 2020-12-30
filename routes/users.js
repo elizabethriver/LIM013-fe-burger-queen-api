@@ -40,12 +40,12 @@ const initAdminUser = (app, next) => {
         // eslint-disable-next-line no-unused-expressions
         postData('users', 'email', 'password', 'roles', adminUser.email, adminUser.password, adminUser.roles.admin)
           .then(() => {
-            console.log('user admin created');
+            // console.log('user admin created');
             // console.log(result);
             next();
           })
-          .catch((error) => {
-            console.log(error);
+          .catch(() => {
+            // console.log(error);
           });
         // try {
         // // eslint-disable-next-line max-len
@@ -218,7 +218,7 @@ module.exports = (app, next) => {
         postDataIn('users', 'email', 'password', 'roles', user.email, user.password, user.roles)
           .then((result) => {
             // console.log(result);
-            console.log('user registered');
+            // console.log('user registered');
             const userRegister = {
               id: result.insertId,
               email: user.email,
@@ -229,7 +229,7 @@ module.exports = (app, next) => {
           })
           .catch((err) => {
             if (err.code === 'ER_DUP_ENTRY') {
-              console.log('User already exists');
+              // console.log('User already exists');
               resp.status(403).end();
             }
           });
@@ -297,7 +297,7 @@ module.exports = (app, next) => {
     // console.log(req.body)
     const { email, password, roles } = req.body;
     // console.log(req.params);
-    console.log({ email, password, roles });
+    // console.log({ email, password, roles });
     const keyword = (isNumber(req.params.uid)) ? 'id' : 'email';
     const isAdmin = req.user.roles === 1;
     // eslint-disable-next-line max-len
