@@ -4,7 +4,7 @@ const {
   requireAuth,
   requireAdmin,
 } = require('../middleware/auth');
-const pool = require('../db-data/modelo');
+// const pool = require('../db-data/modelo');
 
 const {
   getUsers,
@@ -32,13 +32,13 @@ const initAdminUser = (app, next) => {
   };
   // console.log(adminUser);
   // TODO: crear usuaria admin
-  const keyword = 'admin';
+  const keyword = 'roles';
 
   findAdminExist('users', keyword, 1)
     .then((length) => {
       if (length === 0) {
         // eslint-disable-next-line no-unused-expressions
-        postData('users', 'email', 'password', 'admin', adminUser.email, adminUser.password, adminUser.roles.admin)
+        postData('users', 'email', 'password', 'roles', adminUser.email, adminUser.password, adminUser.roles.admin)
           .then(() => {
             console.log('user admin created');
             // console.log(result);
@@ -136,10 +136,10 @@ module.exports = (app, next) => {
    * @code {404} si la usuaria solicitada no existe
    */
   app.get('/users/:uid', requireAuth, (req, resp) => {
-    // console.log(req);
+    // console.log(req.user);
     const keyword = (isNumber(req.params.uid)) ? 'id' : 'email';
     // console.log(keyword);
-    const isAdmin = req.user.admin === 1;
+    const isAdmin = req.user.roles === 1;
     // // console.log(isAdmin);
     // // eslint-disable-next-line max-len
     // eslint-disable-next-line max-len
@@ -155,13 +155,13 @@ module.exports = (app, next) => {
         if (!req.params.uid) {
           return dataError(!req.headers.authorization, resp);
         }
-        const admin = !!(result[0].admin);
+        const admin = !!(result[0].roles);
         const userGet = {
           id: result[0].id,
           email: result[0].email,
           roles: { admin },
         };
-        // userGet.id = result[0].id;
+        // console.log(userGet);
         // userGet.email = result[0].email;
         // userGet.roles = { admin };
         resp.status(200).send(userGet);
@@ -190,14 +190,15 @@ module.exports = (app, next) => {
    * @code {403} si ya existe usuaria con ese `email`
    */
   app.post('/users', requireAdmin, (req, resp, next) => {
-    // console.log(req);
+    // console.log(req.user);
+    // console.log(req.body);
     const { email, password, roles } = req.body;
     // console.log(`otro texot ${{ email, password, roles }}`);
-
+    // const admin = !!(roles);
     const user = {
       email,
       password: bcrypt.hashSync(password, 10),
-      admin: roles.admin,
+      roles: roles.admin,
     };
     // console.log(user);
     if (!email || !password) {
@@ -205,36 +206,36 @@ module.exports = (app, next) => {
     }
     getDataByKeywordPost('users', 'email', user.email)
       .then((result) => {
+        // console.log(result);
         if (!req.headers.authorization) {
           return dataError(!req.headers.authorization, resp);
         }
         // console.log(result);
         if (result.length > 0) {
-          resp.status(403).send({ message: 'Email already exists' }).end();
-        } else {
-        // console.log(result);
-          postDataIn('users', 'email', 'password', 'admin', user.email, user.password, user.admin)
-            .then((result) => {
-              console.log('user registered');
-              const userRegister = {
-                id: result.insertId,
-                email: user.email,
-                admin: { roles: user.admin },
-              };
-              // return next(200);
-              resp.status(200).send(userRegister).end();
-            });
-          // .catch((err) => {
-          //   if (err.code === 'ER_DUP_ENTRY') {
-          //     console.log('User already exists');
-          //     resp.status(403).end();
-          //   }
-          // });
+          return resp.status(403).send({ message: 'Email already exists' }).end();
         }
+        // console.log(result);
+        postDataIn('users', 'email', 'password', 'roles', user.email, user.password, user.roles)
+          .then((result) => {
+            // console.log(result);
+            console.log('user registered');
+            const userRegister = {
+              id: result.insertId,
+              email: user.email,
+              roles: { admin: user.roles },
+            };
+            // return next(200);
+            resp.status(200).send(userRegister).end();
+          })
+          .catch((err) => {
+            if (err.code === 'ER_DUP_ENTRY') {
+              console.log('User already exists');
+              resp.status(403).end();
+            }
+          });
       })
-      .catch((error) => {
-        console.log(error);
-        next(404);
+      .catch(() => {
+        // console.log(error);
       });
 
     // try {
@@ -292,12 +293,13 @@ module.exports = (app, next) => {
    * @code {404} si la usuaria solicitada no existe
    */
   app.put('/users/:uid', requireAdmin && requireAuth, (req, resp, next) => {
+    // console.log(req.user)
+    // console.log(req.body)
     const { email, password, roles } = req.body;
-
-    // console.log(req);
-    // console.log({ email, pa,ssword, roles });
+    // console.log(req.params);
+    console.log({ email, password, roles });
     const keyword = (isNumber(req.params.uid)) ? 'id' : 'email';
-    const isAdmin = req.user.admin === 1;
+    const isAdmin = req.user.roles === 1;
     // eslint-disable-next-line max-len
     const canEdit = (req.params.uid.includes('@')) ? (req.user.email === req.params.uid) : (req.user.id === Number(req.params.uid));
     // // console.log(canEdit);
@@ -315,9 +317,9 @@ module.exports = (app, next) => {
     const role = roles ? roles.admin : false;
     // console.log(role);
     const updatedDetails = {
-      ...((email && validateEmailResp) && { email, admin: role }),
+      ...((email && validateEmailResp) && { email, roles: role }),
       // eslint-disable-next-line max-len
-      ...((password && validatePasswordResp) && { password: bcrypt.hashSync(password, 10), admin: role }),
+      ...((password && validatePasswordResp) && { password: bcrypt.hashSync(password, 10), roles: role }),
     };
     // console.log(updatedDetails);
 
@@ -326,24 +328,31 @@ module.exports = (app, next) => {
         if (!req.params.uid) {
           return dataError(!req.headers.authorization, resp);
         }
+        // console.log(result);
 
         updateDataByKeyword('users', updatedDetails, keyword, req.params.uid)
           .then(() => {
-            getDataByKeyword('users', 'id', req.params.uid)
+            // console.log(result);
+            getDataByKeyword('users', 'email', email)
               .then((user) => {
+                // console.log(user);
+                // const { admin } = !!(user[0].roles);
                 resp.status(200).send(
                   {
                     id: user[0].id,
-                    email,
-                    admin: roles.admin,
+                    email: user[0].email,
+                    roles: { admin: !!(user[0].roles) },
                   },
                 );
+              })
+              .catch(() => {
               });
           })
-          .catch((err) => {
-            console.error(err);
+          .catch(() => {
           });
-      }).catch(() => resp.status(404).send({ message: `El usuario con ${keyword} no existe.` }).end());
+      }).catch(() => {
+        resp.status(404).send({ message: `El usuario con ${keyword} no existe.` }).end();
+      });
   });
 
   /**
@@ -366,7 +375,7 @@ module.exports = (app, next) => {
     // console.log(req);
     const keyword = (isNumber(req.params.uid)) ? 'id' : 'email';
     // console.log(keyword);
-    const isAdmin = req.user.admin === 1;
+    const isAdmin = req.user.roles === 1;
     // console.log(isAdmin);
     // eslint-disable-next-line max-len
     const canEdit = (req.params.uid.includes('@')) ? (req.user.email === req.params.uid) : (req.user.id === Number(req.params.uid));
@@ -387,7 +396,7 @@ module.exports = (app, next) => {
         // const admin = !!(result[0].admin);
         // userDeleted.email = result[0].email;
         // userDeleted.roles = { admin };
-        const admin = !!(result[0].admin);
+        const admin = !!(result[0].roles);
         const userGet = {
           id: result[0].id,
           email: result[0].email,

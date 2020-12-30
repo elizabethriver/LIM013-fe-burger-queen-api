@@ -52,9 +52,9 @@ module.exports.isAuthenticated = (req) => {
 // TODO: decidir por la informacion del request si la usuaria esta autenticada
 
 module.exports.isAdmin = (req) => {
+  // console.log(req.user);
   // TODO: decidir por la informacion del request si la usuaria es admin
-  if (req.user.admin === 1) {
-    // console.log(req.user.admin);
+  if (req.user.roles === 1) {
     return true;
   }
   return false;
