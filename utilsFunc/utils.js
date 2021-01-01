@@ -14,9 +14,34 @@ const dataError = (headers, resp) => {
     return resp.status(401).send('401');
   }
 };
+
+const pagination = (pagesNumber, limitsNumber, result, table, host) => {
+  const pages = (!pagesNumber) ? 1 : pagesNumber;
+  const limits = (!limitsNumber) ? result.length : limitsNumber;
+  const startIndex = (pages - 1) * limits;
+  const endIndex = pages * limits;
+  const usersQueryLimits = result.slice(startIndex, endIndex);
+  const totalPages = Math.ceil(result.length / limits);
+  const previousPage = pages - 1;
+  const nextPage = pages + 1;
+  let link = `<https://${host}/${table}?page=1&limit=${limits}>; rel="first",<https://${host}/${table}?page=${totalPages}&limit=${limits}>; rel="last"`;
+  const results = {
+    link,
+  };
+
+  if (pages > 0 && pages < (totalPages + 1)) {
+    const prev = `,<https://${host}/${table}?page=${previousPage}&limit=${limits}>; rel="prev",`;
+    const next = `<https://${host}/${table}?page=${nextPage}&limit=${limits}>; rel="next"`;
+    link = link.concat(prev, next);
+    results.link = link;
+    results.list = usersQueryLimits;
+  }
+  return results;
+};
 // console.log(checkPassword('121frer..8989.egre232'));
 module.exports = {
   validateEmail,
   checkPassword,
   dataError,
+  pagination,
 };
