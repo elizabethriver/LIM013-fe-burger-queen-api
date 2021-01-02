@@ -47,18 +47,6 @@ const initAdminUser = (app, next) => {
           .catch(() => {
             // console.log(error);
           });
-        // try {
-        // // eslint-disable-next-line max-len
-        // eslint-disable-next-line max-len
-        //   const sql = `INSERT INTO users (email, password, admin) VALUES ('${adminUser.email}', '${adminUser.password}', ${adminUser.roles.admin})`;
-        //   pool.query(sql, (err, result) => {
-        //     // console.log(pool);
-        //     if (err) { throw err; }
-        //     // console.log('user admin created');
-        //   });
-        // } finally {
-        //   next();
-        // }
       } else {
         next();
       }
@@ -237,37 +225,6 @@ module.exports = (app, next) => {
       .catch(() => {
         // console.log(error);
       });
-
-    // try {
-    //   pool.query(`SELECT * FROM users where email='${user.email}'`, (error, result) => {
-    //     if (error) { throw error; }
-    //     // console.log(result);
-    //     if (result.length > 0) {
-    //       return resp.status(403).send({ message: 'Email already exists' }).end();
-    //     }
-    // eslint-disable-next-line max-len
-    //     const sql = `INSERT INTO users (email, password, admin) VALUES ('${user.email}', '${user.password}', ${user.admin})`;
-    //     pool.query(sql, (err, result) => {
-    //       if (err) {
-    //         if (err.code === 'ER_DUP_ENTRY') {
-    //           // console.log('User already exists');
-    //           return resp.status(403).end();
-    //         }
-    //       } else {
-    //         // console.log('user registered');
-    //         const userRegister = {
-    //           id: result.insertId,
-    //           email: user.email,
-    //           admin: { roles: user.admin },
-    //         };
-    //           // return next(200);
-    //         return resp.status(200).json(userRegister).end();
-    //       }
-    //     });
-    //   });
-    // } catch (error) {
-    //   next(404);
-    // }
   });
 
   /**
