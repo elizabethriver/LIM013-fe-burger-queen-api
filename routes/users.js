@@ -140,12 +140,12 @@ module.exports = (app, next) => {
     getDataByKeyword('users', keyword, req.params.uid)
       .then((result) => {
         // console.log(result);
-        if (!req.params.uid) {
+        if (!req.headers.authorization) {
           return dataError(!req.headers.authorization, resp);
         }
         const admin = !!(result[0].roles);
         const userGet = {
-          id: result[0].id,
+          id: (result[0].id).toString(),
           email: result[0].email,
           roles: { admin },
         };
@@ -155,7 +155,7 @@ module.exports = (app, next) => {
         resp.status(200).send(userGet);
       }).catch(() => {
         // console.log(error);
-        resp.status(404).send({ message: `El usuario con ${keyword} no existe para eliminar.` }).end();
+        resp.status(404).send({ message: `User with ${keyword} does not exist.` }).end();
       });
   });
   /**
@@ -208,7 +208,7 @@ module.exports = (app, next) => {
             // console.log(result);
             // console.log('user registered');
             const userRegister = {
-              id: result.insertId,
+              id: (result.insertId).toString(),
               email: user.email,
               roles: { admin: user.roles },
             };
@@ -282,7 +282,7 @@ module.exports = (app, next) => {
 
     getDataByKeyword('users', keyword, req.params.uid)
       .then(() => {
-        if (!req.params.uid) {
+        if (!req.headers.authorization) {
           return dataError(!req.headers.authorization, resp);
         }
         // console.log(result);
@@ -296,7 +296,7 @@ module.exports = (app, next) => {
                 // const { admin } = !!(user[0].roles);
                 resp.status(200).send(
                   {
-                    id: user[0].id,
+                    id: (user[0].id).toString(),
                     email: user[0].email,
                     roles: { admin: !!(user[0].roles) },
                   },
@@ -308,7 +308,7 @@ module.exports = (app, next) => {
           .catch(() => {
           });
       }).catch(() => {
-        resp.status(404).send({ message: `El usuario con ${keyword} no existe.` }).end();
+        resp.status(404).send({ message: `User with ${keyword} does not exist.` }).end();
       });
   });
 
@@ -347,7 +347,7 @@ module.exports = (app, next) => {
 
     getDataByKeyword('users', keyword, req.params.uid)
       .then((result) => {
-        if (!req.params.uid) {
+        if (!req.headers.authorization) {
           return dataError(!req.headers.authorization, resp);
         }
         // const admin = !!(result[0].admin);
@@ -355,7 +355,7 @@ module.exports = (app, next) => {
         // userDeleted.roles = { admin };
         const admin = !!(result[0].roles);
         const userGet = {
-          id: result[0].id,
+          id: (result[0].id).toString(),
           email: result[0].email,
           roles: { admin },
         };
@@ -369,7 +369,7 @@ module.exports = (app, next) => {
           });
       }).catch(() => {
         // console.log(error);
-        resp.status(404).send({ message: `El usuario con ${keyword} no existe para eliminar.` }).end();
+        resp.status(404).send({ message: `User with ${keyword} does not exist to delete.` }).end();
       });
   });
 

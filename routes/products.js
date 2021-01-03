@@ -5,7 +5,7 @@ const {
 
 const {
   // eslint-disable-next-line max-len
-  postingData, getDataByKeywordPost, postDataIn, postData, getDataByKeyword, updateDataByKeyword, deleteData,
+  postingData, getDataByKeywordPost, getDataByKeyword, updateDataByKeyword, deleteData,
 } = require('../db-data/sql');
 const { dataError } = require('../utilsFunc/utils');
 
@@ -34,6 +34,7 @@ module.exports = (app, nextMain) => {
    * @code {401} si no hay cabecera de autenticación
    */
   app.get('/products', requireAuth, (req, resp, next) => {
+
   });
 
   /**
@@ -54,6 +55,31 @@ module.exports = (app, nextMain) => {
    * @code {404} si el producto con `productId` indicado no existe
    */
   app.get('/products/:productId', requireAuth, (req, resp, next) => {
+    // console.log(req.user);
+    const keyword = Number(req.params.productId);
+    // console.log(keyword);
+    getDataByKeyword('products', 'id', keyword)
+      .then((result) => {
+        // console.log(result);
+        if (!req.headers.authorization) {
+          return dataError(!req.headers.authorization, resp);
+        }
+        // eslint-disable-next-line no-param-reassign
+        result[0].id = keyword.toString();
+        const dateEntry = (result[0].dateEntry).toString().split('T')[0];
+        const productGet = {
+          id: result[0].id,
+          name: result[0].name,
+          price: result[0].price,
+          image: result[0].image,
+          type: result[0].type,
+          dateEntry,
+        };
+        resp.status(200).send(productGet);
+      }).catch(() => {
+        // console.log(error);
+        resp.status(404).send({ message: `Product with ${keyword} id does not exist.` }).end();
+      });
   });
 
   /**
@@ -85,16 +111,18 @@ module.exports = (app, nextMain) => {
     // console.log({
     //   name, price, image, type,
     // });
-    console.log(req.user);
     // const isAdmin = req.user.roles === 1;
     // console.log(isAdmin)
-    console.log(req.user.roles)
-    // eslint-disable-next-line max-len
-    if (req.user.roles !== 1) {
-      return resp.status(403).send({ message: 'You do not have admin permissions' }).end();
-    }
+    // // eslint-disable-next-line max-len
+    // if (req.user.roles !== 1) {
+    //   return resp.status(403).send({ message: 'You do not have admin permissions' }).end();
+    // }
     if (!name || !price) {
       return resp.status(400).send({ message: 'name or price empty' }).end();
+    }
+    // eslint-disable-next-line no-restricted-globals
+    if (isNaN(price) && price !== undefined) {
+      return resp.status(400).send({ message: 'Price have to be a number' }).end();
     }
     getDataByKeywordPost('products', 'name', name)
       .then((result) => {
@@ -109,17 +137,22 @@ module.exports = (app, nextMain) => {
 
         const date = new Date();
         const productRegister = {
-          id: result.insertId,
+          // id: result.insertId,
           name,
           price,
           image,
           type,
           dateEntry: `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`,
         };
-        // console.log(result);
+        // console.log(productRegister);
         postingData('products', productRegister)
-          .then(() => {
-            resp.status(200).send(productRegister).end();
+          .then((result) => {
+            const productRegisterSent = {
+              id: (result.insertId).toString(),
+              ...productRegister,
+            };
+            // productRegister.id = result.insertId.toString();
+            resp.status(200).send(productRegisterSent).end();
           })
           .catch((err) => {
             if (err.code === 'ER_DUP_ENTRY') {
@@ -156,6 +189,63 @@ module.exports = (app, nextMain) => {
    * @code {404} si el producto con `productId` indicado no existe
    */
   app.put('/products/:productId', requireAdmin, (req, resp, next) => {
+    const {
+      name, price, image, type,
+    } = req.body;
+    // console.log(req.params);
+    // console.log({
+    //   name, price, image, type,
+    // });
+    const id = Number(req.params.productId);
+    // console.log(id);
+    if (!name || !price || !image || !type) {
+      return resp.status(400).send({ message: 'some values are empty' }).end();
+    }
+    // eslint-disable-next-line no-restricted-globals
+    if (isNaN(price) && price !== undefined) {
+      return resp.status(400).send({ message: 'Price have to be a number' }).end();
+    }
+
+    const date = new Date();
+    const updatedDetailsProductos = {
+      ...((name) && { name }),
+      ...((price) && { price }),
+      ...((image) && { image }),
+      ...((type) && { type }),
+      dateEntry: `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`,
+      // eslint-disable-next-line max-len
+    };
+    // console.log(updatedDetailsProductos);
+
+    getDataByKeyword('products', 'id', id)
+      .then(() => {
+        if (!req.headers.authorization) {
+          return dataError(!req.headers.authorization, resp);
+        }
+        // console.log(result);
+
+        updateDataByKeyword('products', updatedDetailsProductos, 'id', id)
+          .then(() => {
+            // console.log(result);
+            getDataByKeyword('products', 'name', name)
+              .then((product) => {
+                // console.log(product);
+                // const { admin } = !!(user[0].roles);
+                resp.status(200).send(
+                  {
+                    id: (product[0].id).toString(),
+                    ...updatedDetailsProductos,
+                  },
+                );
+              })
+              .catch(() => {
+              });
+          })
+          .catch(() => {
+          });
+      }).catch(() => {
+        resp.status(404).send({ message: 'The product with Id does not exists.' }).end();
+      });
   });
 
   /**
@@ -177,6 +267,36 @@ module.exports = (app, nextMain) => {
    * @code {404} si el producto con `productId` indicado no existe
    */
   app.delete('/products/:productId', requireAdmin, (req, resp, next) => {
+    // console.log(reqproducts);
+    const keyword = Number(req.params.productId);
+    // console.log(keyword);
+
+    getDataByKeyword('products', 'id', keyword)
+      .then((result) => {
+        if (!req.headers.authorization) {
+          return dataError(!req.headers.authorization, resp);
+        }
+        const dateEntry = (result[0].dateEntry).toString().split('T')[0];
+        const productGet = {
+          id: (result[0].id).toString(),
+          name: result[0].name,
+          price: result[0].price,
+          image: result[0].image,
+          type: result[0].type,
+          dateEntry,
+        };
+
+        deleteData('products', 'id', keyword)
+          .then(() => {
+            resp.status(200).send(productGet);
+          })
+          .catch((err) => {
+            console.error(err);
+          });
+      }).catch(() => {
+        // console.log(error);
+        resp.status(404).send({ message: `Product with ${keyword} id does not exist to delete.` }).end();
+      });
   });
 
   nextMain();
