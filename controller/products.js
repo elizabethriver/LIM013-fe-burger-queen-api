@@ -14,6 +14,7 @@ module.exports = {
 
     getAllData('products')
       .then((result) => {
+        // console.log(result);
         if (!req.headers.authorization) {
           return dataError(!req.headers.authorization, resp);
         }
@@ -38,8 +39,31 @@ module.exports = {
           resultsFinal.first = `<http://${host}/${table}?page=1&limit=${limit}>; rel="first"`;
           resultsFinal.last = `<http://${host}/${table}?page=${numPages}&limit=${limit}>; rel="last"`;
           resp.header('link', `${resultsFinal.first} ${resultsFinal.previous} ${resultsFinal.next} ${resultsFinal.last}`);
-          console.log(resp.query);
-          return resp.status(200).send(resultsFinal.result);
+          // console.log(resultsFinal.result);
+
+          const resultarray = resultsFinal.result;
+          const arrayData = [];
+          resultarray.forEach((element) => {
+            // console.log(element);
+            const dateEntry = (result[0].dateEntry).toString().split('T')[0];
+            const elementproduct = {
+              id: (element.id).toString(),
+              name: element.name,
+              price: element.price,
+              image: element.image,
+              type: element.type,
+              dateEntry,
+            };
+            // console.log(arrayData);
+            arrayData.push(
+              elementproduct,
+            );
+            return arrayData;
+          });
+
+          // resultsFinal.result;
+          // resultsFinal.result.id.toString();
+          return resp.status(200).send(arrayData);
         }
       })
       .catch((error) => {

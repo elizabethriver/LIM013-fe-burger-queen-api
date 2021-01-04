@@ -39,8 +39,25 @@ module.exports = {
           resultsFinal.first = `<http://${host}/${table}?page=1&limit=${limit}>; rel="first"`;
           resultsFinal.last = `<http://${host}/${table}?page=${numPages}&limit=${limit}>; rel="last"`;
           resp.header('link', `${resultsFinal.first} ${resultsFinal.previous} ${resultsFinal.next} ${resultsFinal.last}`);
-          console.log(resp.query);
-          return resp.status(200).send(resultsFinal.result);
+          // console.log(resultsFinal.result);
+          const resultarray = resultsFinal.result;
+          const arrayData = [];
+          resultarray.forEach((element) => {
+            // console.log(element);
+            const admin = !!(element.roles);
+            const elementproduct = {
+              id: (element.id).toString(),
+              email: element.name,
+              password: element.password,
+              roles: { admin },
+            };
+            // console.log(arrayData);
+            arrayData.push(
+              elementproduct,
+            );
+            return arrayData;
+          });
+          return resp.status(200).send(arrayData);
         }
       })
       .catch((error) => {
