@@ -57,17 +57,17 @@ module.exports = (app, nextMain) => {
     // console.log(req.user);
     const keyword = Number(req.params.productId);
     // console.log(keyword);
-    getDataByKeyword('products', 'id', keyword)
+    getDataByKeyword('products', '_id', keyword)
       .then((result) => {
         // console.log(result);
         if (!req.headers.authorization) {
           return dataError(!req.headers.authorization, resp);
         }
         // eslint-disable-next-line no-param-reassign
-        result[0].id = keyword.toString();
+        result[0]._id = keyword.toString();
         const dateEntry = (result[0].dateEntry).toString().split('T')[0];
         const productGet = {
-          id: result[0].id,
+          _id: result[0]._id,
           name: result[0].name,
           price: result[0].price,
           image: result[0].image,
@@ -147,7 +147,7 @@ module.exports = (app, nextMain) => {
         postingData('products', productRegister)
           .then((result) => {
             const productRegisterSent = {
-              id: (result.insertId).toString(),
+              _id: (result.insertId).toString(),
               ...productRegister,
             };
             // productRegister.id = result.insertId.toString();
@@ -216,14 +216,14 @@ module.exports = (app, nextMain) => {
     };
     // console.log(updatedDetailsProductos);
 
-    getDataByKeyword('products', 'id', id)
+    getDataByKeyword('products', '_id', id)
       .then(() => {
         if (!req.headers.authorization) {
           return dataError(!req.headers.authorization, resp);
         }
         // console.log(result);
 
-        updateDataByKeyword('products', updatedDetailsProductos, 'id', id)
+        updateDataByKeyword('products', updatedDetailsProductos, '_id', id)
           .then(() => {
             // console.log(result);
             getDataByKeyword('products', 'name', name)
@@ -232,7 +232,7 @@ module.exports = (app, nextMain) => {
                 // const { admin } = !!(user[0].roles);
                 resp.status(200).send(
                   {
-                    id: (product[0].id).toString(),
+                    id: (product[0]._id).toString(),
                     ...updatedDetailsProductos,
                   },
                 );
@@ -270,14 +270,14 @@ module.exports = (app, nextMain) => {
     const keyword = Number(req.params.productId);
     // console.log(keyword);
 
-    getDataByKeyword('products', 'id', keyword)
+    getDataByKeyword('products', '_id', keyword)
       .then((result) => {
         if (!req.headers.authorization) {
           return dataError(!req.headers.authorization, resp);
         }
         const dateEntry = (result[0].dateEntry).toString().split('T')[0];
         const productGet = {
-          id: (result[0].id).toString(),
+          _id: (result[0]._id).toString(),
           name: result[0].name,
           price: result[0].price,
           image: result[0].image,
@@ -285,7 +285,7 @@ module.exports = (app, nextMain) => {
           dateEntry,
         };
 
-        deleteData('products', 'id', keyword)
+        deleteData('products', '_id', keyword)
           .then(() => {
             resp.status(200).send(productGet);
           })

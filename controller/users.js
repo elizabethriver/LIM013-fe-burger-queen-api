@@ -11,7 +11,7 @@ module.exports = {
     const startIndex = (page - 1) * limit;
     const endIndex = page * limit;
     const table = '';
-    console.log(req.user.roles);
+    // console.log(req.user.roles);
 
     getAllData('users')
       .then((result) => {
@@ -45,9 +45,10 @@ module.exports = {
           resultarray.forEach((element) => {
             // console.log(element);
             const admin = !!(element.roles);
+            // const email = element.email;
             const elementproduct = {
-              id: (element.id).toString(),
-              email: element.name,
+              _id: (element._id).toString(),
+              email: element.email,
               password: element.password,
               roles: { admin },
             };

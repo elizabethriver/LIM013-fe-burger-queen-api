@@ -40,7 +40,7 @@ module.exports = (app, nextMain) => {
         // console.log(payload);
         if (payload) {
           // eslint-disable-next-line max-len
-          const token = jwt.sign({ id: payload.id, email: payload.email, password: payload.password }, secret, { expiresIn: 60 * 60 });
+          const token = jwt.sign({ _id: payload._id, email: payload.email, password: payload.password }, secret, { expiresIn: 60 * 60 });
           resp.header('authorization', token);
           resp.status(200).send({ message: 'succesful', token });
           // console.log('user register');

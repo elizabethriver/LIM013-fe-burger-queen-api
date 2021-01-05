@@ -125,13 +125,13 @@ module.exports = (app, next) => {
    */
   app.get('/users/:uid', requireAuth, (req, resp) => {
     // console.log(req.user);
-    const keyword = (isNumber(req.params.uid)) ? 'id' : 'email';
+    const keyword = (isNumber(req.params.uid)) ? '_id' : 'email';
     // console.log(keyword);
     const isAdmin = req.user.roles === 1;
     // // console.log(isAdmin);
     // // eslint-disable-next-line max-len
     // eslint-disable-next-line max-len
-    const canEdit = (req.params.uid.includes('@')) ? (req.user.email === req.params.uid) : (req.user.id === Number(req.params.uid));
+    const canEdit = (req.params.uid.includes('@')) ? (req.user.email === req.params.uid) : (req.user._id === Number(req.params.uid));
     // console.log(canEdit);
     if (!(canEdit || isAdmin)) {
       return resp.status(403).send({ message: 'You do not have admin permissions' });
@@ -145,7 +145,7 @@ module.exports = (app, next) => {
         }
         const admin = !!(result[0].roles);
         const userGet = {
-          id: (result[0].id).toString(),
+          _id: (result[0]._id).toString(),
           email: result[0].email,
           roles: { admin },
         };
@@ -208,7 +208,7 @@ module.exports = (app, next) => {
             // console.log(result);
             // console.log('user registered');
             const userRegister = {
-              id: (result.insertId).toString(),
+              _id: (result.insertId).toString(),
               email: user.email,
               roles: { admin: user.roles },
             };
@@ -255,10 +255,10 @@ module.exports = (app, next) => {
     const { email, password, roles } = req.body;
     // console.log(req.params);
     // console.log({ email, password, roles });
-    const keyword = (isNumber(req.params.uid)) ? 'id' : 'email';
+    const keyword = (isNumber(req.params.uid)) ? '_id' : 'email';
     const isAdmin = req.user.roles === 1;
     // eslint-disable-next-line max-len
-    const canEdit = (req.params.uid.includes('@')) ? (req.user.email === req.params.uid) : (req.user.id === Number(req.params.uid));
+    const canEdit = (req.params.uid.includes('@')) ? (req.user.email === req.params.uid) : (req.user._id === Number(req.params.uid));
     // // console.log(canEdit);
     if (!(canEdit || isAdmin)) {
       return resp.status(403).send({ message: 'You do not have admin permissions' });
@@ -296,7 +296,7 @@ module.exports = (app, next) => {
                 // const { admin } = !!(user[0].roles);
                 resp.status(200).send(
                   {
-                    id: (user[0].id).toString(),
+                    _id: (user[0]._id).toString(),
                     email: user[0].email,
                     roles: { admin: !!(user[0].roles) },
                   },
@@ -330,7 +330,7 @@ module.exports = (app, next) => {
    */
   app.delete('/users/:uid', requireAdmin && requireAuth, (req, resp, next) => {
     // console.log(req);
-    const keyword = (isNumber(req.params.uid)) ? 'id' : 'email';
+    const keyword = (isNumber(req.params.uid)) ? '_id' : 'email';
     // console.log(keyword);
     const isAdmin = req.user.roles === 1;
     // console.log(isAdmin);
@@ -355,7 +355,7 @@ module.exports = (app, next) => {
         // userDeleted.roles = { admin };
         const admin = !!(result[0].roles);
         const userGet = {
-          id: (result[0].id).toString(),
+          _id: (result[0]._id).toString(),
           email: result[0].email,
           roles: { admin },
         };

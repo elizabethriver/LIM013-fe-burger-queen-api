@@ -90,9 +90,74 @@ module.exports = (app, nextMain) => {
    * @code {401} si no hay cabecera de autenticación
    */
   app.post('/orders', requireAuth, (req, resp, next) => {
-    resp.jon({
-      mensaje: 'Crea una nueva orden',
+    // resp.json({
+    //   userId: 'e3',
+    //   Client: 'e3',
+    //   Productos: [
+    //     {
+    //       productId: '',
+    //       qyt: 0,
+    //     },
+    //   ],
+    // });
+    const {
+      userId, Client, Products,
+    } = req.body;
+    console.log({
+      userId, Client, Products,
     });
+    // const isAdmin = req.user.roles === 1;
+    // console.log(isAdmin)
+    // // eslint-disable-next-line max-len
+    // if (req.user.roles !== 1) {
+    //   return resp.status(403).send({ message: 'You do not have admin permissions' }).end();
+    // }
+    if (!userId || !Products) {
+      return resp.status(400).send({ message: 'userId or Products empty' }).end();
+    }
+    // eslint-disable-next-line no-restricted-globals
+    if (isNaN(Products.qyt) && Products.qyt !== undefined) {
+      return resp.status(400).send({ message: 'Price have to be a number' }).end();
+    }
+    // getDataByKeywordPost('products', 'name', name)
+    //   .then((result) => {
+    //     console.log(result);
+    //     if (!req.headers.authorization) {
+    //       return dataError(!req.headers.authorization, resp);
+    //     }
+    //     console.log(result);
+    //     if (result.length > 0) {
+    //       return resp.status(404).send({ message: 'Products already exists' }).end();
+    //     }
+
+    //     const date = new Date();
+    const orderRegister = {
+      id: result.insertId,
+      userId,
+      Client,
+      image,
+      type,
+      dateEntry: `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`,
+    };
+    //     console.log(productRegister);
+    //     postingData('products', productRegister)
+    //       .then((result) => {
+    //         const productRegisterSent = {
+    //           id: (result.insertId).toString(),
+    //           ...productRegister,
+    //         };
+    //         productRegister.id = result.insertId.toString();
+    //         resp.status(200).send(productRegisterSent).end();
+    //       })
+    //       .catch((err) => {
+    //         if (err.code === 'ER_DUP_ENTRY') {
+    //           resp.status(403).end();
+    //         }
+    //       });
+    //   })
+    //   .catch(() => {
+    //     console.log(error);
+    //   });
   });
 
   /**

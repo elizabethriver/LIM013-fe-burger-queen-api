@@ -47,7 +47,7 @@ module.exports = {
             // console.log(element);
             const dateEntry = (result[0].dateEntry).toString().split('T')[0];
             const elementproduct = {
-              id: (element.id).toString(),
+              _id: (element._id).toString(),
               name: element.name,
               price: element.price,
               image: element.image,
