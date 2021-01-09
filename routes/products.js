@@ -67,7 +67,7 @@ module.exports = (app, nextMain) => {
         result[0]._id = keyword.toString();
         const dateEntry = (result[0].dateEntry).toString().split('T')[0];
         const productGet = {
-          _id: result[0]._id,
+          _id: (result[0]._id).toString(),
           name: result[0].name,
           price: result[0].price,
           image: result[0].image,
@@ -143,9 +143,10 @@ module.exports = (app, nextMain) => {
           type,
           dateEntry: `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`,
         };
-        // console.log(productRegister);
+        console.log(productRegister);
         postingData('products', productRegister)
           .then((result) => {
+            console.log(result)
             const productRegisterSent = {
               _id: (result.insertId).toString(),
               ...productRegister,
