@@ -79,7 +79,7 @@ module.exports = (app, nextMain) => {
           client: result[0].client,
           status: result[0].status,
           dateEntry: result[0].dateEntry,
-          dateProcessed: result[0].dateEntry,
+          dateProcessed: result[0].dateProcessed,
         };
         // console.log(orderRegister);
         getDataByKeyword('ordersDetails', 'orderId', keyword)
@@ -430,7 +430,7 @@ module.exports = (app, nextMain) => {
           client: result[0].client,
           status: result[0].status,
           dateEntry: result[0].dateEntry,
-          dateProcessed: result[0].dateEntry,
+          dateProcessed: result[0].dateProcessed,
         };
         // console.log(orderRegister);
 

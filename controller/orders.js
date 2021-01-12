@@ -15,7 +15,7 @@ module.exports = {
 
     getAllData('orders')
       .then((result) => {
-        // console.log(result.length);
+        // console.log(result);
         if (!req.headers.authorization) {
           return dataError(!req.headers.authorization, resp);
         }
@@ -45,8 +45,8 @@ module.exports = {
 
           const resultarray = resultsFinal.result;
           // console.log(resultarray);
-          const arrayData = [];
-          resultarray.forEach((element) => {
+          // const arrayData = [];
+          const arrPromisesOrders = resultarray.map((element) => {
             // console.log(element);
             const orderRegister = {
               // eslint-disable-next-line no-undef
@@ -55,47 +55,64 @@ module.exports = {
               client: element.client,
               status: element.status,
               dateEntry: element.dateEntry,
-              dateProcessed: element.dateEntry,
+              dateProcessed: element.dateProcessed,
             };
             // arrayData.push(orderRegister);
             // });
             // console.log(orderRegister);
-            getDataByKeyword('ordersDetails', 'orderId', element._id)
+            return getDataByKeyword('ordersDetails', 'orderId', element._id)
               .then((order) => {
-                const product = order.reduce((accumulator, currentValue) => {
+                // console.log(order)
+                const arrPromisesProductsOrder = order.reduce((accumulator, currentValue) => {
                   accumulator.push(getDataByKeyword('products', '_id', currentValue.productId));
                   // console.log(newOrderProduct);
                   // console.log(accumulator);
                   return accumulator;
                 }, []);
+
                 // console.log(product)
-                Promise.all(product)
-                  .then((productInfo) => {
-                  // console.log(productInfo);
-                    orderRegister.products = productInfo.flat().map((element) => {
-                    //  console.log(element)
-                    // eslint-disable-next-line no-param-reassign
-                      element._id = (element._id).toString();
-                      // console.log({ product: element })
-                      return { product: element };
-                    });
-                    // console.log(orderRegister.products);
-                    orderRegister.products.forEach((currentValue, index) => {
-                    // eslint-disable-next-line no-param-reassign
-                      currentValue.qty = order[index].qty;
-                    });
-                    // TODO aqui se ve la lista
-                    console.log(orderRegister);
-                    arrayData.push(orderRegister);
-                    return resp.status(200).send(arrayData);
-                  })
-                  .catch(() => {
-                  // console.log(error);
-                  });
+                return Promise.all(arrPromisesProductsOrder)
+                  .then((productsOrder) => [productsOrder, order]);
+
                 // console.log(arrayData);
+              })
+              .then(([productInfo, order]) => {
+                // const productInfo = response[0];
+                // const order = response[1];
+                // console.log(productInfo);
+                orderRegister.products = productInfo.flat().map((element) => {
+                  //  console.log(element)
+                  // eslint-disable-next-line no-param-reassign
+                  element._id = (element._id).toString();
+                  // console.log({ product: element })
+                  return { product: element };
+                });
+                // console.log(orderRegister.products);
+                orderRegister.products.forEach((currentValue, index) => {
+                  // eslint-disable-next-line no-param-reassign
+                  currentValue.qty = order[index].qty;
+                });
+                // TODO aqui se ve la lista
+                // console.log(orderRegister);
+                return orderRegister;
+                // resultarray.forEach((element) => arrayData.push(orderRegister));
+                // resp.status(200).send(arrayData);
+              })
+              .catch(() => {
+                // console.log(error);
               });
             // console.log(orderRegister)
           });
+          // console.log(arrPromisesOrders);
+
+          Promise.all(arrPromisesOrders)
+            .then((response) => {
+              // console.log(response);
+              resp.status(200).send(response);
+            });
+          // console.log(arrayData)
+          // return arrayData;
+          // return
         }
       })
       .catch((error) => {
