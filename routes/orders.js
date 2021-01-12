@@ -1,15 +1,15 @@
 /* eslint-disable no-tabs */
-const e = require('cors');
 const { requireAuth } = require('../middleware/auth');
 const {
   // eslint-disable-next-line max-len
   postingData,
-  getDataByKeywordPost,
   getDataByKeyword,
   updateDataByKeyword,
   deleteData,
 } = require('../db-data/sql');
 const { dataError } = require('../utilsFunc/utils');
+const { getOrders } = require('../controller/orders');
+
 /** @module orders */
 module.exports = (app, nextMain) => {
   /**
@@ -39,11 +39,7 @@ module.exports = (app, nextMain) => {
 	 * @code {200} si la autenticación es correcta
 	 * @code {401} si no hay cabecera de autenticación
 	 */
-  app.get('/orders', requireAuth, (_req, resp, _next) => {
-    resp.jon({
-      mensaje: 'Lista de ordenes',
-    });
-  });
+  app.get('/orders', requireAuth, getOrders);
 
   /**
 	 * @name GET /orders/:orderId
@@ -67,9 +63,61 @@ module.exports = (app, nextMain) => {
 	 * @code {404} si la orden con `orderId` indicado no existe
 	 */
   app.get('/orders/:orderId', requireAuth, (_req, resp, _next) => {
-    resp.jon({
-      mensaje: 'Obtiene los datos de una orden especifico',
-    });
+    const keyword = Number(_req.params.orderId);
+    // console.log(keyword);
+    getDataByKeyword('orders', '_id', keyword)
+      .then((result) => {
+        // console.log(result);
+        if (!_req.headers.authorization) {
+          return dataError(!_req.headers.authorization, resp);
+        }
+        // eslint-disable-next-line no-param-reassign
+        const orderRegister = {
+          // eslint-disable-next-line no-undef
+          _id: (result[0]._id).toString(),
+          userId: (result[0].userId).toString(),
+          client: result[0].client,
+          status: result[0].status,
+          dateEntry: result[0].dateEntry,
+          dateProcessed: result[0].dateEntry,
+        };
+        // console.log(orderRegister);
+        getDataByKeyword('ordersDetails', 'orderId', keyword)
+          .then((order) => {
+            // console.log('paso por aqui');
+            // console.log(result);
+            const product = order.reduce((accumulator, currentValue) => {
+              accumulator.push(getDataByKeyword('products', '_id', currentValue.productId));
+              // console.log(newOrderProduct);
+              // console.log(accumulator);
+              return accumulator;
+            }, []);
+            Promise.all(product)
+              .then((productInfo) => {
+                // console.log(productInfo);
+                orderRegister.products = productInfo.flat().map((element) => {
+                  // console.log(element)
+                  // eslint-disable-next-line no-param-reassign
+                  element._id = (element._id).toString();
+                  // console.log(element.productId)
+                  return { product: element };
+                });
+                // console.log(orderRegister.products);
+                orderRegister.products.forEach((currentValue, index) => {
+                  // eslint-disable-next-line no-param-reassign
+                  currentValue.qty = order[index].qty;
+                });
+                resp.status(200).send(orderRegister);
+              })
+              .catch(() => {
+                // console.log(error);
+              });
+          });
+      })
+      .catch(() => {
+        // console.log();
+        resp.status(404).send({ message: `Product with ${keyword} id does not exist.` }).end();
+      });
   });
 
   /**
@@ -384,25 +432,47 @@ module.exports = (app, nextMain) => {
           dateEntry: result[0].dateEntry,
           dateProcessed: result[0].dateEntry,
         };
-        console.log(orderRegister);
+        // console.log(orderRegister);
+
         getDataByKeyword('ordersDetails', 'orderId', keyword)
-          .then((result) => {
-            
-            console.log(result);
+          .then((order) => {
+            // console.log('paso por aqui');
+            // console.log(result);
+            const product = order.reduce((accumulator, currentValue) => {
+              accumulator.push(getDataByKeyword('products', '_id', currentValue.productId));
+              // console.log(newOrderProduct);
+              // console.log(accumulator);
+              return accumulator;
+            }, []);
+            Promise.all(product)
+              .then((productInfo) => {
+                // console.log(values);
+                orderRegister.products = productInfo.flat().map((element) => {
+                  // console.log(element)
+                  // eslint-disable-next-line no-param-reassign
+                  element._id = (element._id).toString();
+                  // console.log(element.productId)
+                  return { product: element };
+                });
+                // console.log(orderRegister.products);
+                orderRegister.products.forEach((currentValue, index) => {
+                  // eslint-disable-next-line no-param-reassign
+                  currentValue.qty = order[index].qty;
+                });
+                deleteData('orders', '_id', keyword);
+                return _resp.status(200).send(orderRegister);
+              })
+              .catch(() => {
+              // console.error(error)
+              // console.log('aqui')
+              });
+            // console.log(dataProduct);
           })
-          .catch((err) => {
-            console.log(err);
+          .catch(() => {
+            // console.log(error);
           });
-        // deleteData('orders', '_id', keyword)
-        //   .then((result) => {
-        //     // console.log(result);
-        //     // _resp.status(200).send();
-        //   })
-        //   .catch((err) => {
-        //     console.error(err);
-        //   });
-      }).catch((error) => {
-        console.log(error);
+      }).catch(() => {
+        // console.log(error);
         _resp.status(404).send({ message: `Order with ${keyword} id does not exist to delete.` }).end();
       });
   });
