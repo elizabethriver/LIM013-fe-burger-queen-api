@@ -46,7 +46,7 @@ module.exports = (app, nextMain) => {
           // console.log('user register');
         } else {
           // resp.status(404).send({ message: 'user not registered' });
-          resp.status(404).send({ message: 'user not registered' });
+          next(404);
         }
         // next();
       });

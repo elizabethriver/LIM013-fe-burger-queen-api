@@ -5,7 +5,7 @@ const {
 
 const {
   // eslint-disable-next-line max-len
-  postingData, getDataByKeywordPost, getDataByKeyword, updateDataByKeyword, deleteData,
+  postingData, getDataByKeyword, updateDataByKeyword, deleteData,
 } = require('../db-data/sql');
 const { dataError } = require('../utilsFunc/utils');
 const { getProducts } = require('../controller/products');
@@ -125,45 +125,37 @@ module.exports = (app, nextMain) => {
     if (isNaN(price) && price !== undefined) {
       return resp.status(400).send({ message: 'Price have to be a number' }).end();
     }
-    getDataByKeywordPost('products', 'name', name)
-      .then((result) => {
-        // console.log(result);
-        if (!req.headers.authorization) {
-          return dataError(!req.headers.authorization, resp);
-        }
-        // console.log(result);
-        if (result.length > 0) {
-          return resp.status(404).send({ message: 'Products already exists' }).end();
-        }
-
-        const date = new Date();
-        const productRegister = {
-          // id: result.insertId,
-          name,
-          price,
-          image,
-          type,
-          dateEntry: `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`,
-        };
-        // console.log(productRegister);
+    if (!req.headers.authorization) {
+      return dataError(!req.headers.authorization, resp);
+    }
+    const date = new Date();
+    const productRegister = {
+      // id: result.insertId,
+      name,
+      price,
+      image,
+      type,
+      dateEntry: `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`,
+    };
+    getDataByKeyword('products', 'name', name)
+      .then(() => resp.status(404).send({ message: 'Products already exists' }).end())
+      .catch(() => {
+        // console.log(error);
         postingData('products', productRegister)
           .then((result) => {
-            // console.log(result)
+          // console.log(result)
             const productRegisterSent = {
               _id: (result.insertId).toString(),
               ...productRegister,
             };
             // productRegister.id = result.insertId.toString();
             resp.status(200).send(productRegisterSent).end();
-          })
-          .catch((err) => {
-            if (err.code === 'ER_DUP_ENTRY') {
-              resp.status(403).end();
-            }
           });
-      })
-      .catch(() => {
-        // console.log(error);
+        // .catch((err) => {
+        //   if (err.code === 'ER_DUP_ENTRY') {
+        //     resp.status(403).end();
+        //   }
+        // });
       });
   });
 

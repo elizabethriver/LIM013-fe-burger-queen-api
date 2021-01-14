@@ -12,7 +12,7 @@ const {
 
 const {
   // eslint-disable-next-line max-len
-  getDataByKeywordPost, postDataIn, findAdminExist, postData, getDataByKeyword, updateDataByKeyword, deleteData,
+  postDataIn, findAdminExist, postData, getDataByKeyword, updateDataByKeyword, deleteData,
 } = require('../db-data/sql');
 // const users = require('../controller/users');
 
@@ -139,7 +139,7 @@ module.exports = (app, next) => {
    * @code {403} si no es ni admin o la misma usuaria
    * @code {404} si la usuaria solicitada no existe
    */
-  app.get('/users/:uid', requireAuth, (req, resp) => {
+  app.get('/users/:uid', requireAdmin && requireAuth, (req, resp) => {
     // console.log(req.user);
     const keyword = (isNumber(req.params.uid)) ? '_id' : 'email';
     // console.log(keyword);
@@ -201,26 +201,27 @@ module.exports = (app, next) => {
     // console.log(`otro texot ${{ email, password, roles }}`);
     // const admin = !!(roles);
     // console.log('hola estoy aqui: ', admin)
+    const validateInput = validateEmail(email) && checkPassword(password);
+    if (!validateInput) {
+      return resp.status(400).send({ mensaje: 'Invalid email or password' });
+    }
+    const role = roles ? roles.admin : false;
     const user = {
       email,
       password: bcrypt.hashSync(password, 10),
-      roles: roles.admin,
+      roles: role,
     };
     // console.log(user);
     if (!email || !password) {
       return resp.status(400).send({ message: 'email or passwoord empty' }).end();
     }
-    getDataByKeywordPost('users', 'email', user.email)
-      .then((result) => {
-        // console.log(result);
-        if (!req.headers.authorization) {
-          return dataError(!req.headers.authorization, resp);
-        }
-        // console.log(result);
-        if (result.length > 0) {
-          return resp.status(403).send({ message: 'Email already exists' }).end();
-        }
-        // console.log(result);
+    if (!req.headers.authorization) {
+      return dataError(!req.headers.authorization, resp);
+    }
+    getDataByKeyword('users', 'email', user.email)
+      .then(() => resp.status(403).send({ message: 'Email already exists' }).end())
+      .catch(() => {
+        // console.log(error);
         postDataIn('users', 'email', 'password', 'roles', user.email, user.password, user.roles)
           .then((result) => {
             // console.log(result);
@@ -232,16 +233,13 @@ module.exports = (app, next) => {
             };
             // return next(200);
             resp.status(200).send(userRegister).end();
-          })
-          .catch((err) => {
-            if (err.code === 'ER_DUP_ENTRY') {
-              // console.log('User already exists');
-              resp.status(403).end();
-            }
           });
-      })
-      .catch(() => {
-        // console.log(error);
+        // .catch((err) => {
+        //   if (err.code === 'ER_DUP_ENTRY') {
+        //   // console.log('User already exists');
+        //     resp.status(403).end();
+        //   }
+        // });
       });
   });
 
@@ -276,10 +274,11 @@ module.exports = (app, next) => {
     // console.log({ email, password, roles });
     const keyword = (isNumber(req.params.uid)) ? '_id' : 'email';
     const isAdmin = req.user.roles === 1;
+    const cantEditRole = (!!roles && !isAdmin);
     // eslint-disable-next-line max-len
     const canEdit = (req.params.uid.includes('@')) ? (req.user.email === req.params.uid) : (req.user._id === Number(req.params.uid));
     // // console.log(canEdit);
-    if (!(canEdit || isAdmin)) {
+    if (!(canEdit || isAdmin) || cantEditRole) {
       return resp.status(403).send({ message: 'You do not have admin permissions' });
     }
 
