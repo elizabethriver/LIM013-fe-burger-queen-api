@@ -3,6 +3,7 @@ const { getAllData } = require('../db-data/sql');
 const { dataError } = require('../utilsFunc/utils');
 
 module.exports = {
+  // eslint-disable-next-line no-unused-vars
   getUsers: (req, resp, next) => {
     // console.log(req);
     const page = Number(req.query.page);

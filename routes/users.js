@@ -12,7 +12,7 @@ const {
 
 const {
   // eslint-disable-next-line max-len
-  getDataByKeywordPost, postDataIn, postData, findAdminExist, getDataByKeyword, updateDataByKeyword, deleteData,
+  getDataByKeywordPost, postDataIn, findAdminExist, postData, getDataByKeyword, updateDataByKeyword, deleteData,
 } = require('../db-data/sql');
 // const users = require('../controller/users');
 
@@ -26,18 +26,34 @@ const initAdminUser = (app, next) => {
   }
 
   const adminUser = {
+    _id: Number('1001'),
     email: adminEmail,
     password: bcrypt.hashSync(adminPassword, 10),
     roles: { admin: true },
   };
   // console.log(adminUser);
   // TODO: crear usuaria admin
+  // getAllData('users')
+  //   .then(() => {
+  //     console.log(user);
+  //     next();
+  //   })
+  //   .catch(() => {
+  //     console.log(error);
+  //     postingData('users', adminUser)
+  //       .then(() => {
+  //         console.log(result);
+  //         next();
+  //       })
+  //       .catch(() => {
+  //         console.log(err);
+  //       });
+  //   });
   const keyword = 'roles';
 
   findAdminExist('users', keyword, 1)
     .then((length) => {
       if (length === 0) {
-        // eslint-disable-next-line no-unused-expressions
         postData('users', 'email', 'password', 'roles', adminUser.email, adminUser.password, adminUser.roles.admin)
           .then(() => {
             // console.log('user admin created');
@@ -177,12 +193,14 @@ module.exports = (app, next) => {
    * @code {401} si no hay cabecera de autenticación
    * @code {403} si ya existe usuaria con ese `email`
    */
+  // eslint-disable-next-line no-unused-vars
   app.post('/users', requireAdmin, (req, resp, next) => {
     // console.log(req.user);
     // console.log(req.body);
     const { email, password, roles } = req.body;
     // console.log(`otro texot ${{ email, password, roles }}`);
     // const admin = !!(roles);
+    // console.log('hola estoy aqui: ', admin)
     const user = {
       email,
       password: bcrypt.hashSync(password, 10),
@@ -249,6 +267,7 @@ module.exports = (app, next) => {
    * @code {403} una usuaria no admin intenta de modificar sus `roles`
    * @code {404} si la usuaria solicitada no existe
    */
+  // eslint-disable-next-line no-unused-vars
   app.put('/users/:uid', requireAdmin && requireAuth, (req, resp, next) => {
     // console.log(req.user)
     // console.log(req.body)
@@ -328,6 +347,7 @@ module.exports = (app, next) => {
    * @code {403} si no es ni admin o la misma usuaria
    * @code {404} si la usuaria solicitada no existe
    */
+  // eslint-disable-next-line no-unused-vars
   app.delete('/users/:uid', requireAdmin && requireAuth, (req, resp, next) => {
     // console.log(req);
     const keyword = (isNumber(req.params.uid)) ? '_id' : 'email';

@@ -53,6 +53,7 @@ module.exports = (app, nextMain) => {
    * @code {401} si no hay cabecera de autenticación
    * @code {404} si el producto con `productId` indicado no existe
    */
+  // eslint-disable-next-line no-unused-vars
   app.get('/products/:productId', requireAuth, (req, resp, next) => {
     // console.log(req.user);
     const keyword = Number(req.params.productId);
@@ -103,6 +104,7 @@ module.exports = (app, nextMain) => {
    * @code {403} si no es admin
    * @code {404} si el producto con `productId` indicado no existe
    */
+  // eslint-disable-next-line no-unused-vars
   app.post('/products', requireAdmin, (req, resp, next) => {
     const {
       name, price, image, type,
@@ -143,10 +145,10 @@ module.exports = (app, nextMain) => {
           type,
           dateEntry: `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`,
         };
-        console.log(productRegister);
+        // console.log(productRegister);
         postingData('products', productRegister)
           .then((result) => {
-            console.log(result)
+            // console.log(result)
             const productRegisterSent = {
               _id: (result.insertId).toString(),
               ...productRegister,
@@ -188,6 +190,7 @@ module.exports = (app, nextMain) => {
    * @code {403} si no es admin
    * @code {404} si el producto con `productId` indicado no existe
    */
+  // eslint-disable-next-line no-unused-vars
   app.put('/products/:productId', requireAdmin, (req, resp, next) => {
     const {
       name, price, image, type,
@@ -266,6 +269,7 @@ module.exports = (app, nextMain) => {
    * @code {403} si no es ni admin
    * @code {404} si el producto con `productId` indicado no existe
    */
+  // eslint-disable-next-line no-unused-vars
   app.delete('/products/:productId', requireAdmin, (req, resp, next) => {
     // console.log(reqproducts);
     const keyword = Number(req.params.productId);

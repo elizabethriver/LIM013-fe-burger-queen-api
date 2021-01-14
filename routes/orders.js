@@ -62,6 +62,7 @@ module.exports = (app, nextMain) => {
 	 * @code {401} si no hay cabecera de autenticación
 	 * @code {404} si la orden con `orderId` indicado no existe
 	 */
+  // eslint-disable-next-line no-unused-vars
   app.get('/orders/:orderId', requireAuth, (_req, resp, _next) => {
     const keyword = Number(_req.params.orderId);
     // console.log(keyword);
@@ -146,6 +147,7 @@ module.exports = (app, nextMain) => {
 	 * @code {400} no se indica `userId` o se intenta crear una orden sin productos
 	 * @code {401} si no hay cabecera de autenticación
 	 */
+  // eslint-disable-next-line no-unused-vars
   app.post('/orders', requireAuth, (req, resp, _next) => {
     const { userId, client, products } = req.body;
     // console.log({
@@ -260,6 +262,7 @@ module.exports = (app, nextMain) => {
 	 * @code {401} si no hay cabecera de autenticación
 	 * @code {404} si la orderId con `orderId` indicado no existe
 	 */
+  // eslint-disable-next-line no-unused-vars
   app.put('/orders/:orderId', requireAuth, (req, resp, _next) => {
     const {
       userId, client, products, status,
@@ -412,6 +415,7 @@ module.exports = (app, nextMain) => {
 	 * @code {401} si no hay cabecera de autenticación
 	 * @code {404} si el producto con `orderId` indicado no existe
 	 */
+  // eslint-disable-next-line no-unused-vars
   app.delete('/orders/:orderId', requireAuth, (_req, _resp, _next) => {
     // console.log(reqproducts);
     const keyword = Number(_req.params.orderId);
