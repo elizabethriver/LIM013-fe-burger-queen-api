@@ -11,7 +11,7 @@ const db = {
 // console.log(db);
 // const dbUrl = mysql.createConnection(db);
 
-exports.port = process.argv[2] || process.env.PORT || 8080;
+exports.port = process.argv[2] || process.env.PORT || 8888;
 exports.dbUrl = db;
 exports.secret = process.env.JWT_SECRET;
 exports.adminEmail = process.env.ADMIN_EMAIL;

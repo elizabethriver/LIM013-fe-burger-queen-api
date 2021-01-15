@@ -10,7 +10,7 @@ const pkg = require('./package.json');
 
 const { port, secret } = config;
 const app = express();
-
+// console.log( { port, secret })
 // TODO: Conexión a la Base de Datos (MongoDB o MySQL)
 
 app.use(cors());

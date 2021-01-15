@@ -143,13 +143,12 @@ module.exports = (app, nextMain) => {
         // console.log(error);
         postingData('products', productRegister)
           .then((result) => {
-          // console.log(result)
-            const productRegisterSent = {
-              _id: (result.insertId).toString(),
-              ...productRegister,
-            };
-            // productRegister.id = result.insertId.toString();
-            resp.status(200).send(productRegisterSent).end();
+            // const productRegisterSent = {
+            //   _id: (result.insertId).toString(),
+            //   ...productRegister,
+            // };
+            productRegister._id = result.insertId.toString();
+            resp.status(200).send(productRegister).end();
           });
         // .catch((err) => {
         //   if (err.code === 'ER_DUP_ENTRY') {
@@ -226,12 +225,8 @@ module.exports = (app, nextMain) => {
               .then((product) => {
                 // console.log(product);
                 // const { admin } = !!(user[0].roles);
-                resp.status(200).send(
-                  {
-                    id: (product[0]._id).toString(),
-                    ...updatedDetailsProductos,
-                  },
-                );
+                updatedDetailsProductos._id = (product[0]._id).toString();
+                resp.status(200).send(updatedDetailsProductos);
               })
               .catch(() => {
               });
