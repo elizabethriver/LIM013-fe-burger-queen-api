@@ -1,6 +1,6 @@
-const { getAllData } = require('../db-data/sql');
+const { getAllData } = require('./sql');
 const { dataError } = require('../utilsFunc/utils');
-const { getDataByKeyword } = require('../db-data/sql');
+const { getDataByKeyword } = require('./sql');
 
 module.exports = {
   // eslint-disable-next-line no-unused-vars

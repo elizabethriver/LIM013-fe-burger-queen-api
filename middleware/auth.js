@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const pool = require('../db-data/modelo');
+const pool = require('../controller/modelo');
 
 module.exports = (secret) => (req, resp, next) => {
   const { authorization } = req.headers;

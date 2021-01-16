@@ -13,7 +13,7 @@ const {
 const {
   // eslint-disable-next-line max-len
   postDataIn, findAdminExist, postData, getDataByKeyword, updateDataByKeyword, deleteData,
-} = require('../db-data/sql');
+} = require('../controller/sql');
 // const users = require('../controller/users');
 
 const { validateEmail, checkPassword, dataError } = require('../utilsFunc/utils');

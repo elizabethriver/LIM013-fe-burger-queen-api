@@ -1,5 +1,5 @@
 // const { pagination } = require('../utils/utils');
-const { getAllData } = require('../db-data/sql');
+const { getAllData } = require('./sql');
 const { dataError } = require('../utilsFunc/utils');
 
 module.exports = {

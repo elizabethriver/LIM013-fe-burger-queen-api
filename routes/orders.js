@@ -6,7 +6,7 @@ const {
   getDataByKeyword,
   updateDataByKeyword,
   deleteData,
-} = require('../db-data/sql');
+} = require('../controller/sql');
 const { dataError } = require('../utilsFunc/utils');
 const { getOrders } = require('../controller/orders');
 

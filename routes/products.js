@@ -6,7 +6,7 @@ const {
 const {
   // eslint-disable-next-line max-len
   postingData, getDataByKeyword, updateDataByKeyword, deleteData,
-} = require('../db-data/sql');
+} = require('../controller/sql');
 const { dataError } = require('../utilsFunc/utils');
 const { getProducts } = require('../controller/products');
 

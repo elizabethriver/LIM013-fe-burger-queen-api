@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const config = require('../config');
-const pool = require('../db-data/modelo');
+const pool = require('../controller/modelo');
 // const users = require('../controller/users');
 
 const { secret } = config;
