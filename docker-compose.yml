@@ -2,7 +2,7 @@ version: "3"
 services:
   db:
     image: mysql
-    command: --default-authentication-plugin=mysql_native_password
+    command: --init-file db.sql --default-authentication-plugin=mysql_native_password
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: Eruliz1987.
@@ -16,6 +16,8 @@ services:
     networks:
       - private
   node:
+    depends_on:
+    - db
     image: "node:10" # https://hub.docker.com/_/node/
     user: "node"
     working_dir: /home/node/app
