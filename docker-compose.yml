@@ -6,7 +6,7 @@ services:
     restart: always
     volumes:
       - type: bind
-        source: ./db.sql
+        source: ./controller/db.sql
         target: /db.sql
         read_only: true
     environment:
