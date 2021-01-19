@@ -11,7 +11,6 @@ services:
         read_only: true
     environment:
       MYSQL_ROOT_PASSWORD: Eruliz1987.
-      MYSQL_DATABASE: burguerqueen
 
     ports:
       # <Port exposed> : < MySQL Port running inside container>
