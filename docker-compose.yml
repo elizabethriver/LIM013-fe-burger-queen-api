@@ -6,8 +6,9 @@ services:
     restart: always
     volumes:
       - type: bind
-        source: /home/ubuntu/LIM013-fe-burger-queen-api/db.sql
+        source: ./db.sql
         target: /db.sql
+        read_only: true
     environment:
       MYSQL_ROOT_PASSWORD: Eruliz1987.
 
