@@ -1,5 +1,8 @@
 
 CREATE DATABASE IF NOT EXISTS burguerqueen;
+
+CREATE USER 'useradmin'@'%' IDENTIFIED BY 'Eruliz1987.';
+GRANT ALL PRIVILEGES ON burguerqueen.* TO 'useradmin'@'%';
 USE burguerqueen;
 
 CREATE TABLE IF NOT EXISTS users
