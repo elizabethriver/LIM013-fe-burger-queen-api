@@ -4,6 +4,10 @@ services:
     image: mysql
     command: --init-file db.sql --default-authentication-plugin=mysql_native_password
     restart: always
+    volumes:
+      - type: bind
+        source: db.sql
+        target: /db.sql
     environment:
       MYSQL_ROOT_PASSWORD: Eruliz1987.
 
