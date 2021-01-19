@@ -48,6 +48,7 @@ describe('GET /users', () => {
         const linkHeader = parseLinkHeader(headers.get('link'));
 
         const nextUrlObj = url.parse(linkHeader.next);
+        // console.log(nextUrlObj);
         const lastUrlObj = url.parse(linkHeader.last);
         const nextQuery = qs.parse(nextUrlObj.query);
         const lastQuery = qs.parse(lastUrlObj.query);

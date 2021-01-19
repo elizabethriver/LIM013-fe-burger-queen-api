@@ -6,10 +6,10 @@ const kill = require('tree-kill');
 
 const config = require('../config');
 
-const port = process.env.PORT || 8888;
+const port = process.env.PORT || 8080;
 console.log(port);
 const baseUrl = process.env.REMOTE_URL || `http://127.0.0.1:${port}`;
-console.log(baseUrl);
+// console.log(baseUrl);
 const __e2e = {
   port,
   baseUrl,
@@ -29,7 +29,7 @@ const __e2e = {
   // For example: ['users/foo@bar.baz', 'products/xxx', 'orders/yyy']
   // testObjects: [],
 };
-console.log(__e2e);
+// console.log(__e2e);
 
 const fetch = (url, opts = {}) => nodeFetch(`${baseUrl}${url}`, {
   ...opts,
@@ -115,7 +115,7 @@ module.exports = () => new Promise((resolve, reject) => {
   //   cwd: path.resolve(__dirname, '../'),
   //   stdio: ['ignore', 'pipe', 'pipe'],
   // });
-  const child = spawn(/^win/.test(process.platform) ? 'npm.cmd' : 'npm', ['start', process.env.PORT || 8888], {
+  const child = spawn(/^win/.test(process.platform) ? 'npm.cmd' : 'npm', ['start', process.env.PORT || 8080], {
     cwd: path.resolve(__dirname, '../'),
     stdio: ['ignore', 'pipe', 'pipe'],
   });

@@ -12,7 +12,7 @@ const {
 
 const {
   // eslint-disable-next-line max-len
-  postDataIn, findAdminExist, postData, getDataByKeyword, updateDataByKeyword, deleteData,
+  postingData, findAdminExist, postData, getDataByKeyword, updateDataByKeyword, deleteData,
 } = require('../controller/sql');
 // const users = require('../controller/users');
 
@@ -205,35 +205,33 @@ module.exports = (app, next) => {
     if (!validateInput) {
       return resp.status(400).send({ mensaje: 'Invalid email or password' });
     }
-    const role = roles ? roles.admin : false;
-    const user = {
-      email,
-      password: bcrypt.hashSync(password, 10),
-      roles: role,
-    };
+
     // console.log(user);
-    if (!email || !password) {
+    if (!(email && password)) {
       return resp.status(400).send({ message: 'email or passwoord empty' }).end();
     }
     if (!req.headers.authorization) {
       return dataError(!req.headers.authorization, resp);
     }
-    getDataByKeyword('users', 'email', user.email)
+    const role = roles ? roles.admin : false;
+    // console.log(role)
+    const user = {
+      email,
+      password: bcrypt.hashSync(password, 10),
+      roles: role,
+    };
+    getDataByKeyword('users', 'email', email)
       .then(() => resp.status(403).send({ message: 'Email already exists' }).end())
       .catch(() => {
         // console.log(error);
-        postDataIn('users', 'email', 'password', 'roles', user.email, user.password, user.roles)
-          .then((result) => {
-            // console.log(result);
-            // console.log('user registered');
-            const userRegister = {
+        postingData('users', user)
+          .then((result) => resp.status(200).send(
+            {
               _id: (result.insertId).toString(),
               email: user.email,
               roles: { admin: user.roles },
-            };
-            // return next(200);
-            resp.status(200).send(userRegister).end();
-          });
+            },
+          ));
         // .catch((err) => {
         //   if (err.code === 'ER_DUP_ENTRY') {
         //   // console.log('User already exists');
@@ -303,6 +301,10 @@ module.exports = (app, next) => {
         if (!req.headers.authorization) {
           return dataError(!req.headers.authorization, resp);
         }
+        if (!(email || password || roles)) {
+          // eslint-disable-next-line max-len
+          resp.status(400);
+        }
         // console.log(result);
 
         updateDataByKeyword('users', updatedDetails, keyword, req.params.uid)
@@ -325,11 +327,8 @@ module.exports = (app, next) => {
           })
           .catch(() => {
           });
-      }).catch(() => {
-        resp.status(404).send({ message: `User with ${keyword} does not exist.` }).end();
-      });
+      }).catch(() => resp.status(404).send({ message: `User with ${keyword} does not exist.` }));
   });
-
   /**
    * @name DELETE /users
    * @description Elimina una usuaria

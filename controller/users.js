@@ -6,16 +6,17 @@ module.exports = {
   // eslint-disable-next-line no-unused-vars
   getUsers: (req, resp, next) => {
     // console.log(req);
-    const page = Number(req.query.page);
-    const limit = Number(req.query.limit);
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
     const host = req.get('host');
     const startIndex = (page - 1) * limit;
     const endIndex = page * limit;
     const table = '';
-    // console.log(req.user.roles);
+    // console.log(typeof (table));
 
     getAllData('users')
       .then((result) => {
+        // console.log(result)
         if (!req.headers.authorization) {
           return dataError(!req.headers.authorization, resp);
         }
@@ -31,19 +32,19 @@ module.exports = {
           resultsFinal.result = result.slice(startIndex, endIndex);
 
           if (endIndex < result.length) {
-            resultsFinal.next = `<http://${host}/${table}?page=${page + 1}&limit=${limit}>; rel="next"`;
+            resultsFinal.next = `,<http://${host}/${table}?page=${page + 1}&limit=${limit}>; rel="next"`;
             // const link = link.concat(resultsFinal.next);
           }
           if (startIndex > 0) {
-            resultsFinal.previous = `<http://${host}/${table}?page=${page - 1}&limit=${limit}>; rel="prev",`;
+            resultsFinal.previous = `,<http://${host}/${table}?page=${page - 1}&limit=${limit}>; rel="prev"`;
           }
           resultsFinal.first = `<http://${host}/${table}?page=1&limit=${limit}>; rel="first"`;
           resultsFinal.last = `<http://${host}/${table}?page=${numPages}&limit=${limit}>; rel="last"`;
-          resp.header('link', `${resultsFinal.first} ${resultsFinal.previous} ${resultsFinal.next} ${resultsFinal.last}`);
-          // console.log(resultsFinal.result);
+          resp.header('link', (`${resultsFinal.first} ${resultsFinal.previous} ${resultsFinal.next} ${resultsFinal.last}`).toString());
+          console.log(resultsFinal.next);
           const resultarray = resultsFinal.result;
           const arrayData = [];
-          resultarray.forEach((element) => {
+          resultarray.map((element) => {
             // console.log(element);
             const admin = !!(element.roles);
             // const email = element.email;
@@ -57,6 +58,7 @@ module.exports = {
             arrayData.push(
               elementproduct,
             );
+            // console.log(arrayData)
             return arrayData;
           });
           return resp.status(200).send(arrayData);

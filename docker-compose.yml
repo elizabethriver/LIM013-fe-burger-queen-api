@@ -4,6 +4,18 @@ services:
     # TODO: configura tu imagen de base de datos, te recomendamos una de las sgtes:
     # https://hub.docker.com/_/mysql
     # https://hub.docker.com/_/mongo
+    image: mysql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: Eruliz1987.
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+
     networks:
       - private
   node:

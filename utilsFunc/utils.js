@@ -7,7 +7,7 @@ const validateEmail = (email) => {
 // console.log(validateEmail('emailefre@gewfr.com'));
 const checkPassword = (str) => {
   // acepta letras mayusculas y minusculas, minimo 6 caracteres maximo 30
-  const re = /[A-Za-z0-9]{6,100}$/;
+  const re = /[A-Za-z0-9]{6,30}$/;
   return re.test((str));
 };
 
