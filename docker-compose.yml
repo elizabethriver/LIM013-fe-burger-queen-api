@@ -14,15 +14,12 @@ services:
       MYSQL_DATABASE: burguerqueen
       MYSQL_USER: root
       MYSQL_PASSWORD: Eruliz1987.
-
-  adminer:
-    image: adminer
-    restart: always
     ports:
-      - 8080:8080
-
-    networks:
-      - private
+      # <Port exposed> : < MySQL Port running inside container>
+      - '3306:3306'
+    expose:
+      # Opens port 3306 on the container
+      - '3306'
   node:
     depends_on:
     - db
