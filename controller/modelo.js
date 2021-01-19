@@ -2,7 +2,7 @@ const mysql = require('mysql');
 const config = require('../config');
 
 const { dbUrl } = config;
-// console.log({ dbUrl });
+console.log({ dbUrl });
 const pool = mysql.createConnection(dbUrl);
 // pool.connect();
 // console.log(pool);

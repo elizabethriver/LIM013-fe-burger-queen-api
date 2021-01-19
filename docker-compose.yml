@@ -30,8 +30,6 @@ services:
       - NODE_ENV=production
       - PORT=8080
       - DB_URL=db
-    links: 
-      - db
     env_file:
       - secrets.env # los _secrets_ a incluir como variables de entorno. Usa el archivo `sample.secrets.env` como guia
     volumes:
