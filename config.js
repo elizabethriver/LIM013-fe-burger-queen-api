@@ -8,7 +8,6 @@ const db = {
   user: process.env.DB_USER_DB,
   password: process.env.DB_PASS,
 };
-// console.log(db);
 // const dbUrl = mysql.createConnection(db);
 
 exports.port = process.argv[2] || process.env.PORT || 8080;

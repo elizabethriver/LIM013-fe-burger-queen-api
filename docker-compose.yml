@@ -11,6 +11,9 @@ services:
         read_only: true
     environment:
       MYSQL_ROOT_PASSWORD: Eruliz1987.
+      MYSQL_DATABASE: burguerqueen
+      MYSQL_USER: root
+      MYSQL_PASSWORD: Eruliz1987.
 
   adminer:
     image: adminer
