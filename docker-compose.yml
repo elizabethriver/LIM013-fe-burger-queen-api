@@ -12,8 +12,7 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: Eruliz1987.
       MYSQL_DATABASE: burguerqueen
-      MYSQL_USER: root
-      MYSQL_PASSWORD: Eruliz1987.
+
     ports:
       # <Port exposed> : < MySQL Port running inside container>
       - '3306:3306'
