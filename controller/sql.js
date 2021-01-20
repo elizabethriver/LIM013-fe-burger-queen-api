@@ -25,7 +25,7 @@ const getAllData = (table) => new Promise((resolve, reject) => {
 
 const getDataByKeywordPost = (table, keyword, value) => new Promise((resolve, reject) => {
   pool.query(`SELECT * FROM ${table} WHERE ${keyword}=?`, value, (error, result) => {
-  //  console.log(error);
+  // console.log(error);
     // if (result.length > 0) {
     resolve(result);
     // }
@@ -35,7 +35,7 @@ const getDataByKeywordPost = (table, keyword, value) => new Promise((resolve, re
 
 const getDataByKeyword = (table, keyword, value) => new Promise((resolve, reject) => {
   pool.query(`SELECT * FROM ${table} WHERE ${keyword}=?`, value, (error, result) => {
-    // console.log(error);
+    // console.log(result);
     if (result.length > 0) {
       resolve(result);
     } else {

@@ -273,9 +273,10 @@ module.exports = (app, next) => {
     const keyword = (isNumber(req.params.uid)) ? '_id' : 'email';
     const isAdmin = req.user.roles === 1;
     const cantEditRole = (!!roles && !isAdmin);
+    // console.log(cantEditRole)
     // eslint-disable-next-line max-len
     const canEdit = (req.params.uid.includes('@')) ? (req.user.email === req.params.uid) : (req.user._id === Number(req.params.uid));
-    // // console.log(canEdit);
+    // console.log(canEdit);
     if (!(canEdit || isAdmin) || cantEditRole) {
       return resp.status(403).send({ message: 'You do not have admin permissions' });
     }
@@ -303,7 +304,7 @@ module.exports = (app, next) => {
         }
         if (!(email || password || roles)) {
           // eslint-disable-next-line max-len
-          resp.status(400);
+          return dataError(!req.headers.authorization, resp);
         }
         // console.log(result);
 

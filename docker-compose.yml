@@ -1,23 +1,29 @@
 version: "3"
 services:
   db:
+    # TODO: configura tu imagen de base de datos, te recomendamos una de las sgtes:
+    # https://hub.docker.com/_/mysql
+    # https://hub.docker.com/_/mongo
     image: mysql
-    command: --init-file /db.sql --default-authentication-plugin=mysql_native_password
+    command: --default-authentication-plugin=mysql_native_password
     restart: always
-    volumes:
-      - type: bind
-        source: ./controller/db.sql
-        target: /db.sql
-        read_only: true
     environment:
-      - MYSQL_ROOT_PASSWORD=Eruliz1987.
-
+      MYSQL_DATABASE: 'burguerqueen'
+      # So you don't have to use root, but you can if you like
+      MYSQL_USER: 'useradmin'
+      # You can use whatever password you like
+      MYSQL_PASSWORD: 'Eruliz1987.'
+      # Password for root access
+      MYSQL_ROOT_PASSWORD: 'Eruliz1987.'
     ports:
       # <Port exposed> : < MySQL Port running inside container>
       - '3306:3306'
     expose:
       # Opens port 3306 on the container
       - '3306'
+      # Where our data will be persisted
+    volumes:
+      - my-db:/var/lib/mysql
     networks:
       - private
   node:
@@ -44,6 +50,9 @@ services:
     networks:
       - public
       - private
+# Names our volume
+volumes:
+  my-db:
 networks:
   public:
     internal: false
