@@ -4,16 +4,38 @@ services:
     # TODO: configura tu imagen de base de datos, te recomendamos una de las sgtes:
     # https://hub.docker.com/_/mysql
     # https://hub.docker.com/_/mongo
+    image: mysql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_DATABASE: 'burguerqueen'
+      # So you don't have to use root, but you can if you liked
+      MYSQL_USER: 'useradmin'
+      # You can use whatever password you like
+      MYSQL_PASSWORD: 'Eruliz1987.'
+      # Password for root access
+      MYSQL_ROOT_PASSWORD: 'Eruliz1987.'
+    ports:
+      # <Port exposed> : < MySQL Port running inside container>
+      - '3306:3306'
+    expose:
+      # Opens port 3306 on the container
+      - '3306'
+      # Where our data will be persisted
+    volumes:
+      - my-db:/var/lib/mysql
     networks:
       - private
   node:
+    depends_on:
+    - db
     image: "node:10" # https://hub.docker.com/_/node/
     user: "node"
     working_dir: /home/node/app
     environment:
       - NODE_ENV=production
       - PORT=8080
-      - DB_URL=<CONNECTION STRING>
+      - DB_URL="Server=8.8.8.6;Uid=useradmin;Pwd=Eruliz1987.;Database=burguerqueen;Port=3306"
     env_file:
       - secrets.env # los _secrets_ a incluir como variables de entorno. Usa el archivo `sample.secrets.env` como guia
     volumes:
@@ -28,6 +50,9 @@ services:
     networks:
       - public
       - private
+# Names our volume
+volumes:
+  my-db:
 networks:
   public:
     internal: false

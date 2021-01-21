@@ -1,8 +1,13 @@
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 const config = require('../config');
+const pool = require('../controller/modelo');
+// const users = require('../controller/users');
 
 const { secret } = config;
 
+/** @module auth */
+/** @module auth */
 /** @module auth */
 module.exports = (app, nextMain) => {
   /**
@@ -19,14 +24,38 @@ module.exports = (app, nextMain) => {
    */
   app.post('/auth', (req, resp, next) => {
     const { email, password } = req.body;
-
+    // console.log({ email, password });
     if (!email || !password) {
-      return next(400);
+      resp.status(400).send({ message: 'Passwoord or email cant be empty' });
+      return next();
     }
 
     // TODO: autenticar a la usuarix
-    next();
-  });
+    try {
+      pool.query(`SELECT * FROM users WHERE email = '${email}'`, (error, result) => {
+        if (error) throw error;
+        // eslint-disable-next-line max-len
+        const payload = result.find((user) => user.email === email && bcrypt.compareSync(password, user.password));
+        // console.log(result);
+        // console.log(payload);
+        if (payload) {
+          // eslint-disable-next-line max-len
+          const token = jwt.sign({ _id: payload._id, email: payload.email, password: payload.password }, secret, { expiresIn: 60 * 60 });
+          resp.header('authorization', token);
+          resp.status(200).send({ message: 'succesful', token });
+          // console.log('user register');
+        } else {
+          // resp.status(404).send({ message: 'user not registered' });
+          next(404);
+        }
+        // next();
+      });
+    } catch (error) {
+      return error;
+    }
 
+    // next();
+  });
   return nextMain();
 };
+// console.log('Aqui finaliza');

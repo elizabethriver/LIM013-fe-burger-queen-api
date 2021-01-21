@@ -2,7 +2,6 @@ const url = require('url');
 const qs = require('querystring');
 const config = require('../config');
 
-
 const {
   fetch,
   fetchAsTestUser,
@@ -10,13 +9,11 @@ const {
   fetchWithAuth,
 } = process;
 
-
 const parseLinkHeader = (str) => str.split(',')
   .reduce((memo, item) => {
     const [, value, key] = /^<(.*)>;\s+rel="(first|last|prev|next)"/.exec(item.trim());
     return { ...memo, [key]: value };
   }, {});
-
 
 describe('GET /users', () => {
   it('should fail with 401 when no auth', () => (
@@ -51,6 +48,7 @@ describe('GET /users', () => {
         const linkHeader = parseLinkHeader(headers.get('link'));
 
         const nextUrlObj = url.parse(linkHeader.next);
+        // console.log(nextUrlObj);
         const lastUrlObj = url.parse(linkHeader.last);
         const nextQuery = qs.parse(nextUrlObj.query);
         const lastQuery = qs.parse(lastUrlObj.query);
@@ -92,7 +90,6 @@ describe('GET /users', () => {
   ));
 });
 
-
 describe('GET /users/:uid', () => {
   it('should fail with 401 when no auth', () => (
     fetch('/users/foo@bar.baz').then((resp) => expect(resp.status).toBe(401))
@@ -127,7 +124,6 @@ describe('GET /users/:uid', () => {
   ));
 });
 
-
 describe('POST /users', () => {
   it('should respond with 400 when email and password missing', () => (
     fetchAsAdmin('/users', { method: 'POST' })
@@ -140,7 +136,7 @@ describe('POST /users', () => {
   ));
 
   it('should respond with 400 when password is missing', () => (
-    fetchAsAdmin('/users', { method: 'POST', body: { email: 'foo@bar.baz' } })
+    fetchAsAdmin('/users', { method: 'POST', body: { email: 'foo@bar.baz', password: '' } })
       .then((resp) => expect(resp.status).toBe(400))
   ));
 
@@ -164,6 +160,7 @@ describe('POST /users', () => {
       },
     })
       .then((resp) => {
+        console.log(resp);
         expect(resp.status).toBe(200);
         return resp.json();
       })
@@ -206,7 +203,6 @@ describe('POST /users', () => {
       .then((resp) => expect(resp.status).toBe(403))
   ));
 });
-
 
 describe('PUT /users/:uid', () => {
   it('should fail with 401 when no auth', () => (
@@ -271,7 +267,6 @@ describe('PUT /users/:uid', () => {
       .then((json) => expect(json).toHaveProperty('token'))
   ));
 });
-
 
 describe('DELETE /users/:uid', () => {
   it('should fail with 401 when no auth', () => (
