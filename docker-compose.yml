@@ -9,7 +9,7 @@ services:
     restart: always
     environment:
       MYSQL_DATABASE: 'burguerqueen'
-      # So you don't have to use root, but you can if you like
+      # So you don't have to use root, but you can if you liked
       MYSQL_USER: 'useradmin'
       # You can use whatever password you like
       MYSQL_PASSWORD: 'Eruliz1987.'
