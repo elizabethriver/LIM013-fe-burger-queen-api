@@ -1,4 +1,4 @@
-require('dotenv').config({ path: 'secrets1.env' });
+require('dotenv').config({ path: 'secrets.env' });
 
 // const mysql = require('mysql');
 
