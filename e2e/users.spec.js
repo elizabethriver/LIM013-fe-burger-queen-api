@@ -136,7 +136,7 @@ describe('POST /users', () => {
   ));
 
   it('should respond with 400 when password is missing', () => (
-    fetchAsAdmin('/users', { method: 'POST', body: { email: 'foo@bar.baz' } })
+    fetchAsAdmin('/users', { method: 'POST', body: { email: 'foo@bar.baz', password: '' } })
       .then((resp) => expect(resp.status).toBe(400))
   ));
 
@@ -160,6 +160,7 @@ describe('POST /users', () => {
       },
     })
       .then((resp) => {
+        console.log(resp);
         expect(resp.status).toBe(200);
         return resp.json();
       })

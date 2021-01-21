@@ -35,7 +35,8 @@ const getDataByKeywordPost = (table, keyword, value) => new Promise((resolve, re
 
 const getDataByKeyword = (table, keyword, value) => new Promise((resolve, reject) => {
   pool.query(`SELECT * FROM ${table} WHERE ${keyword}=?`, value, (error, result) => {
-    // console.log(result);
+    // console.log('esto es result', result);
+    // console.log('esto es error', error);
     if (result.length > 0) {
       resolve(result);
     } else {

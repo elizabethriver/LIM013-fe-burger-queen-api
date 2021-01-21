@@ -202,17 +202,18 @@ module.exports = (app, next) => {
     // const admin = !!(roles);
     // console.log('hola estoy aqui: ', admin)
     const validateInput = validateEmail(email) && checkPassword(password);
-    if (!validateInput) {
-      return resp.status(400).send({ mensaje: 'Invalid email or password' });
-    }
 
     // console.log(user);
-    if (!(email && password)) {
+    if (!(email || password)) {
       return resp.status(400).send({ message: 'email or passwoord empty' }).end();
     }
     if (!req.headers.authorization) {
       return dataError(!req.headers.authorization, resp);
     }
+    if (!validateInput) {
+      return resp.status(400).send({ mensaje: 'Invalid email or password' });
+    }
+
     const role = roles ? roles.admin : false;
     // console.log(role)
     const user = {
@@ -222,6 +223,17 @@ module.exports = (app, next) => {
     };
     getDataByKeyword('users', 'email', email)
       .then(() => resp.status(403).send({ message: 'Email already exists' }).end())
+      // .then(() => {
+      //   postingData('users', user)
+      //     .then((result) => resp.status(200).send(
+      //       {
+      //         _id: (result.insertId).toString(),
+      //         email: user.email,
+      //         roles: { admin: user.roles },
+      //       },
+      //     ));
+      // })
+      // .catch((err) => console.log('esto es un error', err))
       .catch(() => {
         // console.log(error);
         postingData('users', user)
@@ -232,12 +244,6 @@ module.exports = (app, next) => {
               roles: { admin: user.roles },
             },
           ));
-        // .catch((err) => {
-        //   if (err.code === 'ER_DUP_ENTRY') {
-        //   // console.log('User already exists');
-        //     resp.status(403).end();
-        //   }
-        // });
       });
   });
 
