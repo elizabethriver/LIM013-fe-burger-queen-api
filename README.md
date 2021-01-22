@@ -1,16 +1,15 @@
-# Burger Queen - API con Node.js & Mysql & Insomnia 
+# Burger Queen - API with Node.js & Mysql & Insomnia 
 
-## Índice
+## Container
 
-* [1. Resumen del proyecto](#1-resumen-del-proyecto)
-* [2. Endpoints realizados](#2-endpoints-realizados)
-* [3. CLI](#2-cli)
+* [1. Project summary](#1-project-summary)
+* [2. Endpoints made](#2-endpoints-made)
+* [3. CLI](#3-cli)
 
-## 1. Resumen del proyecto
+## 1.  Project summary
 
-El desarrollo API de este proyecto esta dirigido a un pequeño restaurante de hamburguesas, que necesita un sistema de pedidos con el uso de una _tablet_, para la preparacion de la orden de forma ordenada y eficiente.
-
-## 2. Endpoints realizados
+The API development of this project is aimed at a small hamburger restaurant, which needs an ordering system with the use of a tablet, to prepare the order in an orderly and efficient way.
+## 2. Endpoints made
 
 #### 2.1 `/`
 
@@ -58,4 +57,4 @@ El desarrollo API de este proyecto esta dirigido a un pequeño restaurante de ha
 ![Imagen15](https://user-images.githubusercontent.com/63525613/105425888-28e50400-5c18-11eb-91ff-f9ac05879503.png)
 ### 3. CLI
 
-La clienta puede ejecutar el API con **`npm start`**, recibiendo informacion sobre el puerto en el que escucha.
+The client can run the API with ** `npm start` **, receiving information about the port on which it listens.
