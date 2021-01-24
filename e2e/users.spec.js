@@ -155,12 +155,12 @@ describe('POST /users', () => {
       method: 'POST',
       body: {
         email: 'test1@test.test',
-        password: '12345',
+        password: '123456',
         roles: { admin: false },
       },
     })
       .then((resp) => {
-        console.log(resp);
+        // console.log(resp);
         expect(resp.status).toBe(200);
         return resp.json();
       })
@@ -178,7 +178,7 @@ describe('POST /users', () => {
       method: 'POST',
       body: {
         email: 'admin1@test.test',
-        password: '12345',
+        password: '123456',
         roles: { admin: true },
       },
     })

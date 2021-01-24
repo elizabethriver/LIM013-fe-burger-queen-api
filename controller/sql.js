@@ -4,10 +4,13 @@ const pool = require('./modelo.js');
 const findAdminExist = (table, keyword, value) => new Promise((resolve, reject) => {
   pool.query(`SELECT * FROM ${table} where ${keyword}=?`, value, (error, result) => {
     // console.log('findaAdminExist', error, result);
-    if (error) { throw error; }
+    // if (error) { throw error; }
+    // console.log(result)
     if (result) {
+      // console.log(result.length)
       resolve(result.length);
     }
+    // console.log('find', error)
     reject(error);
   });
 });

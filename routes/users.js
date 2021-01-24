@@ -31,7 +31,7 @@ const initAdminUser = (app, next) => {
     password: bcrypt.hashSync(adminPassword, 10),
     roles: { admin: true },
   };
-  // console.log(adminUser);
+  // console.log(adminEmail);
   // TODO: crear usuaria admin
   // getAllData('users')
   //   .then(() => {
@@ -53,6 +53,7 @@ const initAdminUser = (app, next) => {
 
   findAdminExist('users', keyword, 1)
     .then((length) => {
+      // console.log(length)
       if (length === 0) {
         postData('users', 'email', 'password', 'roles', adminUser.email, adminUser.password, adminUser.roles.admin)
           .then(() => {
@@ -61,14 +62,14 @@ const initAdminUser = (app, next) => {
             next();
           })
           .catch(() => {
-            // console.log(error);
+            // console.log( 'posdata', error);
           });
       } else {
         next();
       }
     })
-    .catch((error) => {
-      console.error(error);
+    .catch(() => {
+      // console.error(error);
     });
 };
 
@@ -203,16 +204,16 @@ module.exports = (app, next) => {
     // console.log('hola estoy aqui: ', admin)
     const validateInput = validateEmail(email) && checkPassword(password);
 
-    // console.log(user);
-    if (!(email || password)) {
-      return resp.status(400).send({ message: 'email or passwoord empty' }).end();
+    // console.log(validateInput);
+    if (!(email || password) || !validateInput) {
+      return resp.status(400).send({ message: 'email or passwoord empty or not validated' }).end();
     }
     if (!req.headers.authorization) {
       return dataError(!req.headers.authorization, resp);
     }
-    if (!validateInput) {
-      return resp.status(400).send({ mensaje: 'Invalid email or password' });
-    }
+    // if (!validateInput) {
+    //   return resp.status(400).send({ mensaje: 'Invalid email or password' });
+    // }
 
     const role = roles ? roles.admin : false;
     // console.log(role)
@@ -223,17 +224,6 @@ module.exports = (app, next) => {
     };
     getDataByKeyword('users', 'email', email)
       .then(() => resp.status(403).send({ message: 'Email already exists' }).end())
-      // .then(() => {
-      //   postingData('users', user)
-      //     .then((result) => resp.status(200).send(
-      //       {
-      //         _id: (result.insertId).toString(),
-      //         email: user.email,
-      //         roles: { admin: user.roles },
-      //       },
-      //     ));
-      // })
-      // .catch((err) => console.log('esto es un error', err))
       .catch(() => {
         // console.log(error);
         postingData('users', user)
@@ -279,6 +269,10 @@ module.exports = (app, next) => {
     const keyword = (isNumber(req.params.uid)) ? '_id' : 'email';
     const isAdmin = req.user.roles === 1;
     const cantEditRole = (!!roles && !isAdmin);
+    const validateEmailResp = validateEmail(email);
+    const validatePasswordResp = checkPassword(password);
+    const role = roles ? roles.admin : false;
+
     // console.log(cantEditRole)
     // eslint-disable-next-line max-len
     const canEdit = (req.params.uid.includes('@')) ? (req.user.email === req.params.uid) : (req.user._id === Number(req.params.uid));
@@ -292,9 +286,6 @@ module.exports = (app, next) => {
       return resp.status(400).send({ message: 'email or passwoord empty' }).end();
     }
 
-    const validateEmailResp = validateEmail(email);
-    const validatePasswordResp = checkPassword(password);
-    const role = roles ? roles.admin : false;
     // console.log(role);
     const updatedDetails = {
       ...((email && validateEmailResp) && { email, roles: role }),
@@ -310,28 +301,21 @@ module.exports = (app, next) => {
         }
         if (!(email || password || roles)) {
           // eslint-disable-next-line max-len
-          return dataError(!req.headers.authorization, resp);
+          return resp.status(400);
         }
         // console.log(result);
 
         updateDataByKeyword('users', updatedDetails, keyword, req.params.uid)
-          .then(() => {
-            // console.log(result);
-            getDataByKeyword('users', 'email', email)
-              .then((user) => {
-                // console.log(user);
-                // const { admin } = !!(user[0].roles);
-                resp.status(200).send(
-                  {
-                    _id: (user[0]._id).toString(),
-                    email: user[0].email,
-                    roles: { admin: !!(user[0].roles) },
-                  },
-                );
-              })
-              .catch(() => {
-              });
-          })
+          .then(() => getDataByKeyword('users', 'email', email)
+            .then((user) => resp.status(200).send(
+              {
+                _id: (user[0]._id).toString(),
+                email: user[0].email,
+                roles: { admin: !!(user[0].roles) },
+              },
+            ))
+            .catch(() => {
+            }))
           .catch(() => {
           });
       }).catch(() => resp.status(404).send({ message: `User with ${keyword} does not exist.` }));
