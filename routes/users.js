@@ -171,7 +171,6 @@ module.exports = (app, next) => {
         // userGet.roles = { admin };
         resp.status(200).send(userGet);
       }).catch(() => {
-        // console.log(error);
         resp.status(404).send({ message: `User with ${keyword} does not exist.` }).end();
       });
   });
@@ -282,7 +281,7 @@ module.exports = (app, next) => {
     }
 
     // console.log(keyword);
-    if (!email || !password) {
+    if (!email || !password || !roles) {
       return resp.status(400).send({ message: 'email or passwoord empty' }).end();
     }
 
@@ -299,7 +298,7 @@ module.exports = (app, next) => {
         if (!req.headers.authorization) {
           return dataError(!req.headers.authorization, resp);
         }
-        if (!(email || password || roles)) {
+        if (!(email || password || roles) || !keyword) {
           // eslint-disable-next-line max-len
           return resp.status(400);
         }

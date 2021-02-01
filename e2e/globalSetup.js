@@ -7,7 +7,7 @@ const kill = require('tree-kill');
 const config = require('../config');
 
 const port = process.env.PORT || 8080;
-console.log(port);
+// console.log(port);
 const baseUrl = process.env.REMOTE_URL || `http://127.0.0.1:${port}`;
 // console.log(baseUrl);
 const __e2e = {

@@ -216,7 +216,7 @@ describe('PUT /users/:uid', () => {
   ));
 
   it('should fail with 404 when admin and not found', () => (
-    fetchAsAdmin('/users/abc@def.gih', { method: 'PUT' })
+    fetchAsAdmin('/users/adminotfound@test.test', { method: 'PUT' })
       .then((resp) => expect(resp.status).toBe(404))
   ));
 
@@ -236,12 +236,12 @@ describe('PUT /users/:uid', () => {
   it('should update user when own data (password change)', () => (
     fetchAsTestUser('/users/test@test.test', {
       method: 'PUT',
-      body: { password: 'garmadon' },
+      body: { email: 'test@test.test', password: '123456789', roles: { admin: false } },
     })
       .then((resp) => expect(resp.status).toBe(200))
       .then(() => fetch('/auth', {
         method: 'POST',
-        body: { email: 'test@test.test', password: 'garmadon' },
+        body: { email: 'test@test.test', password: '123456789' },
       }))
       .then((resp) => {
         expect(resp.status).toBe(200);
@@ -253,7 +253,7 @@ describe('PUT /users/:uid', () => {
   it('should update user when admin', () => (
     fetchAsAdmin('/users/test@test.test', {
       method: 'PUT',
-      body: { password: 'ohmygod' },
+      body: { email: 'test@test.test', password: 'ohmygod', roles: { admin: false } },
     })
       .then((resp) => expect(resp.status).toBe(200))
       .then(() => fetch('/auth', {
@@ -285,7 +285,8 @@ describe('DELETE /users/:uid', () => {
   ));
 
   it('should delete own user', () => {
-    const credentials = { email: `foo-${Date.now()}@bar.baz`, password: '1234' };
+    const credentials = { email: `foo-${Date.now()}@bar.baz`, password: '123456' };
+    // console.log(credentials)
     return fetchAsAdmin('/users', { method: 'POST', body: credentials })
       .then((resp) => expect(resp.status).toBe(200))
       .then(() => fetch('/auth', { method: 'POST', body: credentials }))
@@ -302,7 +303,7 @@ describe('DELETE /users/:uid', () => {
   });
 
   it('should delete other user as admin', () => {
-    const credentials = { email: `foo-${Date.now()}@bar.baz`, password: '1234' };
+    const credentials = { email: `foo-${Date.now()}@bar.baz`, password: '123456' };
     return fetchAsAdmin('/users', { method: 'POST', body: credentials })
       .then((resp) => expect(resp.status).toBe(200))
       .then(() => fetchAsAdmin(`/users/${credentials.email}`, { method: 'DELETE' }))

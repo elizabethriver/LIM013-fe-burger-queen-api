@@ -57,29 +57,26 @@ module.exports = (app, nextMain) => {
   app.get('/products/:productId', requireAuth, (req, resp, next) => {
     // console.log(req.user);
     const keyword = Number(req.params.productId);
+    if (!req.headers.authorization) {
+      return dataError(!req.headers.authorization, resp);
+    }
     // console.log(keyword);
     getDataByKeyword('products', '_id', keyword)
       .then((result) => {
         // console.log(result);
-        if (!req.headers.authorization) {
-          return dataError(!req.headers.authorization, resp);
-        }
         // eslint-disable-next-line no-param-reassign
         result[0]._id = keyword.toString();
-        const dateEntry = (result[0].dateEntry).toString().split('T')[0];
-        const productGet = {
-          _id: (result[0]._id).toString(),
-          name: result[0].name,
-          price: result[0].price,
-          image: result[0].image,
-          type: result[0].type,
-          dateEntry,
-        };
-        resp.status(200).send(productGet);
-      }).catch(() => {
-        // console.log(error);
-        resp.status(404).send({ message: `Product with ${keyword} id does not exist.` }).end();
-      });
+        // const dateEntry = (result[0].dateEntry).toString().split('T')[0];
+        // const productGet = {
+        //   _id: (result[0]._id).toString(),
+        //   name: result[0].name,
+        //   price: result[0].price,
+        //   image: result[0].image,
+        //   type: result[0].type,
+        //   dateEntry,
+        // };
+        return resp.status(200).send(result[0]);
+      }).catch(() => resp.status(404).send({ message: `Product with ${keyword} id does not exist.` }).end());
   });
 
   /**
@@ -182,7 +179,7 @@ module.exports = (app, nextMain) => {
    * @code {404} si el producto con `productId` indicado no existe
    */
   // eslint-disable-next-line no-unused-vars
-  app.put('/products/:productId', requireAdmin, (req, resp, next) => {
+  app.put('/products/:productId', requireAdmin && requireAuth, (req, resp, next) => {
     const {
       name, price, image, type,
     } = req.body;
@@ -216,6 +213,7 @@ module.exports = (app, nextMain) => {
         if (!req.headers.authorization) {
           return dataError(!req.headers.authorization, resp);
         }
+
         // console.log(result);
 
         updateDataByKeyword('products', updatedDetailsProductos, '_id', id)
